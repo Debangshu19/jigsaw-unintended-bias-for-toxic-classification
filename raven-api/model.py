@@ -3,6 +3,18 @@ from dataclasses import dataclass
 from typing import Iterable
 
 DEFAULT_THRESHOLD = 0.5
+TOXIC_LABEL_HINTS = (
+    "toxic",
+    "severe",
+    "obscene",
+    "threat",
+    "insult",
+    "identity",
+    "hate",
+    "abuse",
+    "offensive",
+)
+SAFE_LABEL_HINTS = ("safe", "clean", "neutral", "normal", "non_toxic", "not_toxic", "non-toxic")
 
 
 @dataclass
@@ -53,39 +65,53 @@ class DemoFallbackModel:
 
 
 class TransformersModel:
-    source = "raven-local-model"
-
-    def __init__(self, model_dir: str) -> None:
+    def __init__(self, model_ref: str, source: str) -> None:
         import torch
         import torch.nn.functional as functional
-        from transformers import DistilBertForSequenceClassification, DistilBertTokenizerFast
+        from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
         self.torch = torch
         self.functional = functional
         self.threshold = float(os.getenv("RAVEN_THRESHOLD", DEFAULT_THRESHOLD))
-        self.tokenizer = DistilBertTokenizerFast.from_pretrained(model_dir)
-        self.model = DistilBertForSequenceClassification.from_pretrained(model_dir)
+        self.model_ref = model_ref
+        self.source = source
+        self.tokenizer = AutoTokenizer.from_pretrained(model_ref)
+        self.model = AutoModelForSequenceClassification.from_pretrained(model_ref)
         self.model.eval()
+        self.id2label = {
+            int(index): str(label).lower().replace(" ", "_")
+            for index, label in getattr(self.model.config, "id2label", {}).items()
+        }
 
     def predict_one(self, text: str) -> Prediction:
-        inputs = self.tokenizer(
-            text,
-            return_tensors="pt",
-            truncation=True,
-            padding=True,
-            max_length=128,
-        )
+        return self.predict_batch([text])[0]
 
-        with self.torch.no_grad():
-            outputs = self.model(**inputs)
+    def _toxic_score(self, logits) -> float:
+        label_count = int(logits.shape[-1])
 
-        probs = self.functional.softmax(outputs.logits, dim=1)[0]
-        toxic_score = float(probs[1])
-        needs_review = toxic_score >= self.threshold
+        if label_count == 1:
+            return float(self.torch.sigmoid(logits)[0])
 
+        toxic_indexes = [
+            index
+            for index in range(label_count)
+            if any(hint in self.id2label.get(index, "") for hint in TOXIC_LABEL_HINTS)
+            and not any(hint in self.id2label.get(index, "") for hint in SAFE_LABEL_HINTS)
+        ]
+
+        if toxic_indexes and len(toxic_indexes) > 1:
+            probs = self.torch.sigmoid(logits)
+            return max(float(probs[index]) for index in toxic_indexes)
+
+        probs = self.functional.softmax(logits.unsqueeze(0), dim=1)[0]
+        toxic_index = toxic_indexes[0] if toxic_indexes else min(1, label_count - 1)
+        return float(probs[toxic_index])
+
+    def _prediction(self, score: float) -> Prediction:
+        needs_review = score >= self.threshold
         return Prediction(
             label="review" if needs_review else "safe",
-            score=round(toxic_score, 4),
+            score=round(score, 4),
             needs_review=needs_review,
             source=self.source,
         )
@@ -103,25 +129,16 @@ class TransformersModel:
         with self.torch.no_grad():
             outputs = self.model(**inputs)
 
-        probs = self.functional.softmax(outputs.logits, dim=1)
-        predictions = []
-        for row in probs:
-            toxic_score = float(row[1])
-            needs_review = toxic_score >= self.threshold
-            predictions.append(
-                Prediction(
-                    label="review" if needs_review else "safe",
-                    score=round(toxic_score, 4),
-                    needs_review=needs_review,
-                    source=self.source,
-                )
-            )
-
-        return predictions
+        return [self._prediction(self._toxic_score(row)) for row in outputs.logits]
 
 
 def load_model():
     model_dir = os.getenv("RAVEN_MODEL_DIR")
     if model_dir and os.path.isdir(model_dir):
-        return TransformersModel(model_dir)
+        return TransformersModel(model_dir, "raven-local-model")
+
+    model_id = os.getenv("RAVEN_MODEL_ID")
+    if model_id:
+        return TransformersModel(model_id, "raven-hf-model")
+
     return DemoFallbackModel()

@@ -27,7 +27,11 @@ app.add_middleware(
 
 @app.get("/health")
 def health():
-    return {"ok": True, "source": getattr(model, "source", "unknown")}
+    return {
+        "ok": True,
+        "source": getattr(model, "source", "unknown"),
+        "model_ref": getattr(model, "model_ref", None),
+    }
 
 
 @app.get("/metadata")
@@ -35,6 +39,7 @@ def metadata():
     return {
         "name": "Raven",
         "source": getattr(model, "source", "unknown"),
+        "model_ref": getattr(model, "model_ref", None),
         "threshold": getattr(model, "threshold", None),
         "endpoints": ["/health", "/metadata", "/predict", "/predict-batch"],
     }

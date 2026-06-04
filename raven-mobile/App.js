@@ -20,6 +20,8 @@ const initialText = [
   "This sounds aggressive and should be reviewed by a moderator."
 ].join("\n");
 
+const quickSample = "This comment is aggressive and should be reviewed.";
+
 function fallbackScore(text) {
   const terms = ["aggressive", "attack", "bully", "hate", "hurt", "insult", "moderator", "not cool", "review", "stupid", "threat", "harass"];
   const normalized = text.toLowerCase();
@@ -43,17 +45,13 @@ export default function App() {
   const [results, setResults] = useState(linesFromText(initialText).map((line) => ({ text: line, ...fallbackScore(line) })));
   const [source, setSource] = useState("mobile-demo-fallback");
   const [loading, setLoading] = useState(false);
+  const [quickText, setQuickText] = useState(quickSample);
+  const [quickResult, setQuickResult] = useState({ text: quickSample, ...fallbackScore(quickSample) });
+  const [quickLoading, setQuickLoading] = useState(false);
 
   const reviewCount = useMemo(() => results.filter((result) => result.needs_review).length, [results]);
 
-  async function scan() {
-    const lines = linesFromText(text);
-    if (!lines.length) {
-      setResults([]);
-      return;
-    }
-
-    setLoading(true);
+  async function predictLines(lines) {
     try {
       const response = await fetch(`${API_URL}/predict-batch`, {
         method: "POST",
@@ -66,11 +64,38 @@ export default function App() {
         text: lines[index],
         ...prediction
       }));
+      return predictions;
+    } catch {
+      return lines.map((line) => ({ text: line, ...fallbackScore(line) }));
+    }
+  }
+
+  async function scanQuick() {
+    const line = quickText.trim();
+    if (!line) {
+      setQuickResult(null);
+      return;
+    }
+
+    setQuickLoading(true);
+    const [prediction] = await predictLines([line]);
+    setQuickResult(prediction);
+    setSource(prediction?.source || "raven-api");
+    setQuickLoading(false);
+  }
+
+  async function scan() {
+    const lines = linesFromText(text);
+    if (!lines.length) {
+      setResults([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const predictions = await predictLines(lines);
       setResults(predictions);
       setSource(predictions[0]?.source || "raven-api");
-    } catch {
-      setResults(lines.map((line) => ({ text: line, ...fallbackScore(line) })));
-      setSource("mobile-demo-fallback");
     } finally {
       setLoading(false);
     }
@@ -96,6 +121,26 @@ export default function App() {
             <View><Text style={styles.statValue}>{results.length}</Text><Text style={styles.statLabel}>Scanned</Text></View>
             <View><Text style={styles.statValue}>{reviewCount}</Text><Text style={styles.statLabel}>Review</Text></View>
           </View>
+        </View>
+
+        <View style={styles.quickCard}>
+          <Text style={styles.quickLabel}>Live check</Text>
+          <TextInput
+            style={styles.quickInput}
+            value={quickText}
+            onChangeText={setQuickText}
+            placeholder="Type a comment and press Enter"
+            returnKeyType="go"
+            onSubmitEditing={scanQuick}
+          />
+          <Pressable style={styles.quickButton} onPress={scanQuick} disabled={quickLoading}>
+            <Text style={styles.quickButtonText}>{quickLoading ? "Scanning..." : "Scan comment"}</Text>
+          </Pressable>
+          <Text style={[styles.quickResult, quickResult?.needs_review && styles.quickReview]}>
+            {quickResult
+              ? `${quickResult.needs_review ? "Review" : "Safe"} · ${Math.round(quickResult.score * 100)}% · ${quickResult.source}`
+              : "Enter a comment to scan it"}
+          </Text>
         </View>
 
         <TextInput
@@ -140,6 +185,13 @@ const styles = StyleSheet.create({
   stats: { width: "100%", flexDirection: "row", gap: 12, marginTop: 10 },
   statValue: { fontSize: 30, fontWeight: "800", color: "#111" },
   statLabel: { color: "#7b8794", fontWeight: "800", textTransform: "uppercase", fontSize: 12 },
+  quickCard: { padding: 16, borderRadius: 20, backgroundColor: "#fff", borderWidth: 1, borderColor: "#e1eef8", gap: 10 },
+  quickLabel: { color: "#258dff", fontWeight: "800", textTransform: "uppercase", fontSize: 12 },
+  quickInput: { height: 48, paddingHorizontal: 14, borderRadius: 14, backgroundColor: "#f7fbff", color: "#111" },
+  quickButton: { height: 46, borderRadius: 23, backgroundColor: "#258dff", alignItems: "center", justifyContent: "center" },
+  quickButtonText: { color: "#fff", fontWeight: "800" },
+  quickResult: { color: "#208044", fontWeight: "800" },
+  quickReview: { color: "#a45d00" },
   input: { minHeight: 150, padding: 16, borderRadius: 18, backgroundColor: "#f7fbff", color: "#111", textAlignVertical: "top" },
   button: { height: 54, borderRadius: 27, backgroundColor: "#258dff", alignItems: "center", justifyContent: "center" },
   buttonText: { color: "#fff", fontSize: 17, fontWeight: "800" },

@@ -9,6 +9,7 @@ import {
   Puzzle,
   RefreshCw,
   ScanLine,
+  Send,
   Server,
   ShieldCheck,
   X
@@ -80,6 +81,8 @@ const demoSamples = [
   "This sounds aggressive and should be reviewed by a moderator."
 ];
 
+const quickSample = "This comment is aggressive and should be reviewed.";
+
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -138,6 +141,10 @@ function App() {
   const [demoSource, setDemoSource] = useState("browser-demo-fallback");
   const [demoLoading, setDemoLoading] = useState(false);
   const [apiHealth, setApiHealth] = useState({ state: "checking", source: "checking" });
+  const [quickText, setQuickText] = useState(quickSample);
+  const [quickResult, setQuickResult] = useState(() => ({ text: quickSample, ...scoreText(quickSample) }));
+  const [quickLoading, setQuickLoading] = useState(false);
+  const quickInputRef = useRef(null);
 
   const demoLines = useMemo(() => parseDemoLines(demoText), [demoText]);
 
@@ -203,6 +210,38 @@ function App() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  const focusDemo = useCallback((event) => {
+    event?.preventDefault();
+    setMenuOpen(false);
+    document.getElementById("demo")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    window.setTimeout(() => quickInputRef.current?.focus(), 520);
+  }, []);
+
+  const runQuickScan = useCallback(
+    async (event) => {
+      event?.preventDefault();
+      const line = quickText.trim();
+
+      if (!line) {
+        setQuickResult(null);
+        return;
+      }
+
+      setQuickLoading(true);
+      try {
+        const [apiResult] = await scoreWithApi([line]);
+        setQuickResult(apiResult);
+        setApiHealth({ state: "online", source: apiResult?.source || "raven-api" });
+      } catch {
+        setQuickResult({ text: line, ...scoreText(line) });
+        setApiHealth({ state: "offline", source: "browser fallback" });
+      } finally {
+        setQuickLoading(false);
+      }
+    },
+    [quickText]
+  );
+
   const navLinks = [
     ["#how-it-works", "How it works"],
     ["#features", "Features"],
@@ -223,7 +262,7 @@ function App() {
           </div>
           <div className="nav-actions">
             <span className={`api-pill ${apiHealth.state}`}>{apiHealth.state === "online" ? "API online" : apiHealth.state === "checking" ? "Checking" : "Fallback"}</span>
-            <a className="gradient-btn nav-cta" href="#demo">
+            <a className="gradient-btn nav-cta" href="#demo" onClick={focusDemo}>
               <ArrowDownToLine size={18} />
               Try Demo
             </a>
@@ -241,7 +280,7 @@ function App() {
               {label}
             </a>
           ))}
-          <a className="gradient-btn" href="#demo" onClick={() => setMenuOpen(false)}>
+          <a className="gradient-btn" href="#demo" onClick={focusDemo}>
             <ScanLine size={18} />
             Try Demo
           </a>
@@ -258,7 +297,7 @@ function App() {
               <p>
                 Raven scans comments, detects risky language, and highlights the posts that need human attention.
               </p>
-              <a className="gradient-btn hero-btn" href="#demo">
+              <a className="gradient-btn hero-btn" href="#demo" onClick={focusDemo}>
                 <ScanLine size={18} />
                 Scan Sample Text
               </a>
@@ -343,6 +382,42 @@ function App() {
                 <h2>Try the scanner.</h2>
                 <p>This demo calls `raven-api` first. If the service is offline, it falls back to the local browser demo scorer.</p>
               </div>
+            </Reveal>
+
+            <Reveal>
+              <form className="quick-demo" onSubmit={runQuickScan}>
+                <div className="quick-demo-copy">
+                  <span>Live check</span>
+                  <strong>Type a comment and press Enter.</strong>
+                </div>
+                <div className="quick-input-row">
+                  <input
+                    id="quick-demo-input"
+                    ref={quickInputRef}
+                    value={quickText}
+                    onChange={(event) => setQuickText(event.target.value)}
+                    placeholder="Write a comment to scan"
+                    aria-label="Type a comment to scan"
+                  />
+                  <button type="submit" disabled={quickLoading}>
+                    <Send size={18} />
+                    {quickLoading ? "Scanning" : "Scan"}
+                  </button>
+                </div>
+                <div
+                  className={`quick-result ${quickResult?.needsReview ? "needs-review" : quickResult ? "is-safe" : ""}`}
+                  aria-live="polite"
+                >
+                  {quickResult ? (
+                    <>
+                      <strong>{quickResult.needsReview ? "Review" : "Safe"}</strong>
+                      <span>{Math.round(quickResult.score * 100)}% · {quickResult.source}</span>
+                    </>
+                  ) : (
+                    <span>Enter a comment to scan it.</span>
+                  )}
+                </div>
+              </form>
             </Reveal>
 
             <div className="demo-grid">
@@ -430,7 +505,7 @@ function App() {
           <Reveal>
             <h2>Bring Raven to the browser.</h2>
             <p>The extension prototype scans visible comment nodes and highlights anything the model marks for review.</p>
-            <a className="gradient-btn" href="#demo">
+            <a className="gradient-btn" href="#demo" onClick={focusDemo}>
               <CheckCircle2 size={18} />
               Test the Flow
             </a>
