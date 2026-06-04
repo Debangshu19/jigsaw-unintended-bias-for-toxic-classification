@@ -14,22 +14,21 @@ import {
   X
 } from "lucide-react";
 import "./styles.css";
-
-const RAVEN_API_URL = import.meta.env.VITE_RAVEN_API_URL || "http://localhost:8000";
+import { checkRavenHealth, parseDemoLines, scoreText, scoreWithApi } from "./ravenClient";
 
 const howItWorks = [
   {
-    img: "/assets/raven-onboarding.png",
+    img: "/assets/raven-onboarding.svg",
     title: "Load Raven",
     desc: "Use the Raven model service or connect your fine-tuned DistilBERT checkpoint."
   },
   {
-    img: "/assets/raven-scan.png",
+    img: "/assets/raven-scan.svg",
     title: "Scan the page",
     desc: "Raven reads visible comments and scores what needs human review."
   },
   {
-    img: "/assets/raven-extension.png",
+    img: "/assets/raven-extension.svg",
     title: "Highlight risky posts",
     desc: "The extension marks concerning comments in place without changing the original page."
   }
@@ -37,17 +36,17 @@ const howItWorks = [
 
 const features = [
   {
-    img: "/assets/raven-scan.png",
+    img: "/assets/raven-scan.svg",
     title: "See exactly what needs review",
     desc: "Raven keeps safe comments quiet and highlights borderline or harmful text with confidence signals."
   },
   {
-    img: "/assets/raven-dashboard.png",
+    img: "/assets/raven-dashboard.svg",
     title: "Use a model you can actually own",
     desc: "Start with the DistilBERT notebook work already in this repo, export it, and serve it as Raven."
   },
   {
-    img: "/assets/raven-extension.png",
+    img: "/assets/raven-extension.svg",
     title: "Built for social feeds",
     desc: "The browser extension prototype scans visible comment areas on pages like video, post, and thread views."
   }
@@ -80,70 +79,6 @@ const demoSamples = [
   "I disagree with the point, but the explanation helped.",
   "This sounds aggressive and should be reviewed by a moderator."
 ];
-
-function parseDemoLines(text) {
-  return text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
-
-function scoreText(text) {
-  const normalized = text.toLowerCase();
-  const reviewTerms = [
-    "aggressive",
-    "attack",
-    "bully",
-    "hate",
-    "hurt",
-    "insult",
-    "moderator",
-    "not cool",
-    "review",
-    "reviewed",
-    "stupid",
-    "threat",
-    "harass"
-  ];
-  const hits = reviewTerms.filter((term) => normalized.includes(term)).length;
-  const score = Math.min(0.94, 0.14 + hits * 0.26 + Math.min(text.length / 420, 0.18));
-  const needsReview = hits > 0 || score > 0.58;
-
-  return {
-    score,
-    needsReview,
-    needs_review: needsReview,
-    label: needsReview ? "review" : "safe",
-    source: "browser-demo-fallback"
-  };
-}
-
-async function scoreWithApi(lines, signal) {
-  const response = await fetch(`${RAVEN_API_URL}/predict-batch`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ texts: lines }),
-    signal
-  });
-
-  if (!response.ok) {
-    throw new Error(`Raven API returned ${response.status}`);
-  }
-
-  const data = await response.json();
-  if (!Array.isArray(data.predictions)) {
-    throw new Error("Raven API response is missing predictions");
-  }
-
-  return data.predictions.map((prediction, index) => ({
-    text: lines[index],
-    score: Number(prediction.score) || 0,
-    needsReview: Boolean(prediction.needs_review),
-    needs_review: Boolean(prediction.needs_review),
-    label: prediction.label || (prediction.needs_review ? "review" : "safe"),
-    source: prediction.source || "raven-api"
-  }));
-}
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -210,9 +145,7 @@ function App() {
     setApiHealth((current) => ({ ...current, state: "checking" }));
 
     try {
-      const response = await fetch(`${RAVEN_API_URL}/health`);
-      if (!response.ok) throw new Error(`Raven API returned ${response.status}`);
-      const health = await response.json();
+      const health = await checkRavenHealth();
       setApiHealth({ state: "online", source: health.source || "raven-api" });
       return health;
     } catch {
@@ -347,7 +280,7 @@ function App() {
           </div>
           <Reveal delay={0.3}>
             <div className="hero-stage">
-              <img src="/assets/raven-hero-stage.png" alt="Raven mobile app scanning comments" />
+              <img src="/assets/raven-hero-stage.svg" alt="Raven mobile app scanning comments" />
             </div>
           </Reveal>
         </section>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1672 941">
+  <defs>
+    <linearGradient id="blue" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8bdcff"/><stop offset="1" stop-color="#258dff"/></linearGradient>
+    <filter id="phoneShadow" x="-40%" y="-20%" width="180%" height="160%"><feDropShadow dx="0" dy="28" stdDeviation="23" flood-color="#111" flood-opacity=".22"/></filter>
+    <filter id="stageShadow" x="-10%" y="-20%" width="120%" height="150%"><feDropShadow dx="0" dy="30" stdDeviation="20" flood-color="#000" flood-opacity=".25"/></filter>
+  </defs>
+  <rect width="1672" height="941" fill="#050505"/>
+  <rect x="30" y="32" width="1612" height="856" rx="56" fill="#fff" filter="url(#stageShadow)"/>
+  <g filter="url(#phoneShadow)">
+    <rect x="646" y="69" width="426" height="794" rx="66" fill="#111"/>
+    <rect x="662" y="87" width="394" height="758" rx="54" fill="#fff"/>
+    <rect x="791" y="107" width="170" height="42" rx="21" fill="#050505"/>
+    <text x="859" y="218" text-anchor="middle" font-family="Instrument Sans, Arial" font-size="34" font-weight="800" fill="#121212">Raven</text>
+    <path d="M859 262 960 300v88c0 74-42 132-101 160-59-28-101-86-101-160v-88Z" fill="#f0f7ff" stroke="#72baff" stroke-width="8"/>
+    <path d="M804 390c24-52 70-58 112-22-34-8-61-2-80 22l42 8-62 60 10-58Z" fill="#258dff"/>
+    <text x="859" y="592" text-anchor="middle" font-family="Instrument Sans, Arial" font-size="34" font-weight="800" fill="#121212">Scan comments</text>
+    <text x="859" y="625" text-anchor="middle" font-family="Instrument Sans, Arial" font-size="17" font-weight="600" fill="#7b8794">Find what needs review.</text>
+    <g transform="translate(705 662)" font-family="Instrument Sans, Arial">
+      <rect width="308" height="64" rx="18" fill="#fff" stroke="#e7edf4"/>
+      <circle cx="32" cy="32" r="19" fill="#d9ecff"/><text x="32" y="39" text-anchor="middle" font-size="15" font-weight="800" fill="#2066b2">AK</text>
+      <text x="64" y="28" font-size="16" font-weight="800" fill="#152033">Alex K.</text><text x="64" y="47" font-size="12" fill="#536276">Thanks for the context.</text>
+      <rect x="244" y="22" width="48" height="21" rx="10" fill="#e8f8ed"/><text x="268" y="37" text-anchor="middle" font-size="10" font-weight="800" fill="#208044">Safe</text>
+      <rect y="82" width="308" height="74" rx="18" fill="#fffaf0" stroke="#f2a323" stroke-width="2"/>
+      <circle cx="32" cy="119" r="19" fill="#ffefcf"/><text x="32" y="126" text-anchor="middle" font-size="15" font-weight="800" fill="#b96c00">JD</text>
+      <text x="64" y="114" font-size="16" font-weight="800" fill="#152033">Jordan D.</text><text x="64" y="134" font-size="12" fill="#536276">Keep it respectful.</text>
+      <rect x="235" y="106" width="57" height="22" rx="11" fill="#fff2d8"/><text x="264" y="121" text-anchor="middle" font-size="10" font-weight="800" fill="#a45d00">Review</text>
+    </g>
+    <rect x="704" y="802" width="310" height="58" rx="29" fill="url(#blue)"/>
+    <text x="859" y="839" text-anchor="middle" font-family="Instrument Sans, Arial" font-size="23" font-weight="800" fill="#fff">Start Scan</text>
+  </g>
+</svg>

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1254 1254">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#edf8ff"/><stop offset="1" stop-color="#8cc7ff"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="150%" height="150%"><feDropShadow dx="0" dy="24" stdDeviation="24" flood-color="#0d315a" flood-opacity=".16"/></filter>
+  </defs>
+  <rect x="32" y="32" width="1190" height="1190" rx="76" fill="url(#bg)" stroke="#fff" stroke-width="6"/>
+  <g filter="url(#shadow)" font-family="Instrument Sans, Arial">
+    <rect x="142" y="214" width="960" height="642" rx="34" fill="#fff"/>
+    <rect x="142" y="214" width="960" height="64" rx="34" fill="#f5f9fd"/>
+    <circle cx="188" cy="246" r="10" fill="#ff6b6b"/><circle cx="220" cy="246" r="10" fill="#ffd166"/><circle cx="252" cy="246" r="10" fill="#62d681"/>
+    <rect x="296" y="233" width="370" height="30" rx="15" fill="#e7eef6"/>
+    <rect x="186" y="328" width="560" height="90" rx="22" fill="#fff" stroke="#e7edf4"/>
+    <rect x="186" y="448" width="560" height="116" rx="22" fill="#fffaf0" stroke="#f2a323" stroke-width="3"/>
+    <rect x="186" y="594" width="560" height="90" rx="22" fill="#fff" stroke="#e7edf4"/>
+    <text x="226" y="370" font-size="22" font-weight="800" fill="#121212">Comment thread</text>
+    <text x="226" y="489" font-size="22" font-weight="800" fill="#121212">Needs review</text>
+    <text x="226" y="523" font-size="18" fill="#536276">Raven marked this one for moderator attention.</text>
+    <text x="226" y="637" font-size="22" font-weight="800" fill="#121212">Safe reply</text>
+    <rect x="800" y="328" width="214" height="340" rx="28" fill="#f7fbff" stroke="#dceaf7"/>
+    <text x="836" y="382" font-size="32" font-weight="800" fill="#121212">Raven</text>
+    <rect x="836" y="420" width="132" height="38" rx="19" fill="#fff2d8" stroke="#efbd62"/><text x="902" y="445" text-anchor="middle" font-size="16" font-weight="800" fill="#a45d00">1 Review</text>
+    <rect x="836" y="478" width="132" height="38" rx="19" fill="#e8f8ed" stroke="#bde8ca"/><text x="902" y="503" text-anchor="middle" font-size="16" font-weight="800" fill="#208044">2 Safe</text>
+    <rect x="836" y="555" width="150" height="52" rx="26" fill="#258dff"/><text x="911" y="588" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">Open Queue</text>
+    <rect x="368" y="790" width="268" height="118" rx="30" fill="#111"/>
+    <rect x="388" y="810" width="228" height="78" rx="22" fill="#fff"/>
+    <text x="502" y="858" text-anchor="middle" font-size="28" font-weight="800" fill="#258dff">Live Shield</text>
+  </g>
+</svg>
