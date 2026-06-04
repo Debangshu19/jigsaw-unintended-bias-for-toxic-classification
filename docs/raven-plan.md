@@ -97,17 +97,18 @@ Response:
 
 ## Mobile App
 
-Build after the website/API:
+The first Expo scaffold now lives in `raven-mobile`:
 
-- React Native or Expo.
-- Same Raven visual system as the website.
-- Screens: onboarding, paste/link scan, review queue, model confidence, settings.
-- API calls to the same `/predict` and `/predict-batch` endpoints.
+- React Native/Expo app shell.
+- Paste comments, scan through `/predict-batch`, and render a review queue.
+- Uses the same local fallback approach as web/extension when the API is offline.
+- Next screens to add: onboarding, link scan, settings, and model confidence.
 
 ## Immediate Build Order
 
 1. Website with Raven assets and demo scanner.
 2. FastAPI service that loads exported DistilBERT.
 3. Extension that calls the service.
-4. Export model from notebooks or `raven-model/train_distilbert.py` and test real inference.
-5. Quantize or optimize only after the end-to-end demo works.
+4. Expo mobile shell with the same scan contract.
+5. Export model from notebooks or `raven-model/train_distilbert.py` and test real inference.
+6. Quantize or optimize only after the end-to-end demo works.

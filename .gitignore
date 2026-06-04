@@ -7,3 +7,4 @@ __pycache__/
 .raven-reference/
 .raven-screenshots/
 models/
+.expo/

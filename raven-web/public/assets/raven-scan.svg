@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1254 1254">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#edf8ff"/>
+      <stop offset=".55" stop-color="#d2ecff"/>
+      <stop offset="1" stop-color="#7fc0ff"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#82d8ff"/>
+      <stop offset="1" stop-color="#217cff"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-20%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="28" stdDeviation="25" flood-color="#0d315a" flood-opacity=".22"/>
+    </filter>
+  </defs>
+  <rect x="32" y="32" width="1190" height="1190" rx="76" fill="url(#bg)" stroke="#fff" stroke-width="6"/>
+  <g filter="url(#shadow)">
+    <rect x="361" y="88" width="532" height="1080" rx="78" fill="#111"/>
+    <rect x="379" y="108" width="496" height="1040" rx="64" fill="#fff"/>
+    <rect x="548" y="128" width="180" height="44" rx="22" fill="#050505"/>
+    <text x="445" y="158" font-family="Instrument Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#141414">9:41</text>
+    <text x="627" y="246" text-anchor="middle" font-family="Instrument Sans, Arial, sans-serif" font-size="42" font-weight="700" fill="#121212">Raven Scan</text>
+    <text x="627" y="294" text-anchor="middle" font-family="Instrument Sans, Arial, sans-serif" font-size="22" font-weight="600" fill="#7b8794">Scanning visible comments</text>
+    <g transform="translate(421 338)">
+      <g>
+        <rect width="412" height="96" rx="24" fill="#fff" stroke="#e7edf4"/>
+        <circle cx="48" cy="48" r="27" fill="#d9ecff"/><text x="48" y="57" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#2066b2">AK</text>
+        <text x="92" y="43" font-family="Instrument Sans, Arial" font-size="22" font-weight="700" fill="#152033">Alex K.</text>
+        <text x="92" y="70" font-family="Instrument Sans, Arial" font-size="17" fill="#425466">Helpful breakdown. Thanks.</text>
+        <rect x="314" y="31" width="70" height="34" rx="17" fill="#e8f8ed" stroke="#bde8ca"/><text x="349" y="53" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#208044">Safe</text>
+      </g>
+      <g transform="translate(0 118)">
+        <rect width="412" height="112" rx="24" fill="#fffaf0" stroke="#f2a323" stroke-width="3"/>
+        <circle cx="48" cy="56" r="27" fill="#ffefcf"/><text x="48" y="65" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#b96c00">JD</text>
+        <text x="92" y="47" font-family="Instrument Sans, Arial" font-size="22" font-weight="700" fill="#152033">Jordan D.</text>
+        <text x="92" y="75" font-family="Instrument Sans, Arial" font-size="17" fill="#425466">That was not cool. Keep it respectful.</text>
+        <rect x="306" y="39" width="82" height="34" rx="17" fill="#fff6dc" stroke="#e6a11d"/><text x="347" y="61" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#a45d00">Review</text>
+      </g>
+      <g transform="translate(0 252)">
+        <rect width="412" height="96" rx="24" fill="#fff" stroke="#e7edf4"/>
+        <circle cx="48" cy="48" r="27" fill="#d9ecff"/><text x="48" y="57" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#2066b2">SP</text>
+        <text x="92" y="43" font-family="Instrument Sans, Arial" font-size="22" font-weight="700" fill="#152033">Sam P.</text>
+        <text x="92" y="70" font-family="Instrument Sans, Arial" font-size="17" fill="#425466">I had not thought of it that way.</text>
+        <rect x="314" y="31" width="70" height="34" rx="17" fill="#e8f8ed" stroke="#bde8ca"/><text x="349" y="53" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#208044">Safe</text>
+      </g>
+      <g transform="translate(0 370)">
+        <rect width="412" height="96" rx="24" fill="#fff" stroke="#e7edf4"/>
+        <circle cx="48" cy="48" r="27" fill="#d9ecff"/><text x="48" y="57" text-anchor="middle" font-family="Arial" font-size="22" font-weight="700" fill="#2066b2">MR</text>
+        <text x="92" y="43" font-family="Instrument Sans, Arial" font-size="22" font-weight="700" fill="#152033">Mira R.</text>
+        <text x="92" y="70" font-family="Instrument Sans, Arial" font-size="17" fill="#425466">Thanks for explaining the context.</text>
+        <rect x="314" y="31" width="70" height="34" rx="17" fill="#e8f8ed" stroke="#bde8ca"/><text x="349" y="53" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#208044">Safe</text>
+      </g>
+    </g>
+    <g transform="translate(421 1015)">
+      <rect width="412" height="82" rx="41" fill="url(#blue)"/>
+      <text x="206" y="52" text-anchor="middle" font-family="Instrument Sans, Arial" font-size="29" font-weight="700" fill="#fff">Scan Page</text>
+    </g>
+  </g>
+</svg>
