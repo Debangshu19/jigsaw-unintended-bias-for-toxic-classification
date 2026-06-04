@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "Raven Comment Shield",
+  "version": "0.1.0",
+  "description": "Highlights visible comments that Raven marks for review.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["http://localhost:8000/*"],
+  "action": {
+    "default_title": "Raven",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.youtube.com/*", "https://*.twitter.com/*", "https://*.x.com/*", "https://*.instagram.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
