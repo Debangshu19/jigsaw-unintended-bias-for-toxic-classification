@@ -14,7 +14,7 @@ def main():
         json={
             "texts": [
                 "Great article. Thanks for sharing this perspective.",
-                "This sounds aggressive and should be reviewed by a moderator.",
+                "You are stupid and I hate this.",
             ]
         },
     )

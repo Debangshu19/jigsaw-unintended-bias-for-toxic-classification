@@ -3,7 +3,7 @@
 }
 
 body {
-  width: 320px;
+  width: 360px;
   margin: 0;
   background: #101010;
   color: #fff;
@@ -91,4 +91,70 @@ button {
 .source {
   margin-top: 12px;
   text-align: center;
+}
+
+.manual-check {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.manual-check label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+#quick-form {
+  display: grid;
+  grid-template-columns: 1fr 82px;
+  gap: 8px;
+}
+
+input {
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  outline: 0;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font: inherit;
+}
+
+input:focus {
+  border-color: rgba(149, 221, 255, 0.62);
+}
+
+#quick-scan {
+  height: 42px;
+  border-radius: 12px;
+}
+
+.quick-result {
+  margin-top: 10px;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.58);
+  line-height: 1.35;
+}
+
+.quick-result.safe {
+  border-color: rgba(52, 211, 153, 0.24);
+  background: rgba(52, 211, 153, 0.08);
+  color: #9ef0c6;
+}
+
+.quick-result.review {
+  border-color: rgba(245, 158, 11, 0.28);
+  background: rgba(245, 158, 11, 0.1);
+  color: #ffd18a;
 }

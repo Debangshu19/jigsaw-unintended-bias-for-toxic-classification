@@ -57,10 +57,18 @@ pip install -r requirements.txt
 uvicorn app:app --reload --port 8000
 ```
 
-If `RAVEN_MODEL_DIR` points to an exported Hugging Face model folder, the API uses it. Otherwise it runs a clearly marked demo fallback.
+If `RAVEN_MODEL_DIR` points to an exported Hugging Face model folder, the API uses it. If `RAVEN_MODEL_ID` is set, the API downloads and serves that Hugging Face sequence-classification model. Otherwise it runs a clearly marked demo fallback.
 
 ```bash
 export RAVEN_MODEL_DIR=/Users/niladri/Documents/mine/clgFinalYear/models/raven-distilbert
+export RAVEN_THRESHOLD=0.5
+uvicorn app:app --reload --port 8000
+```
+
+Use this stronger ready-made toxicity classifier while the custom Raven checkpoint is still training:
+
+```bash
+export RAVEN_MODEL_ID=unitary/toxic-bert
 export RAVEN_THRESHOLD=0.5
 uvicorn app:app --reload --port 8000
 ```
@@ -79,4 +87,4 @@ python smoke_test.py
 2. Enable developer mode.
 3. Load unpacked extension from `extension/`.
 4. Keep `raven-api` running on port `8000`.
-5. Use the Raven popup to check API status and manually scan the current page.
+5. Use the Raven popup to check API status, manually scan the current page, or test one typed comment with Enter.

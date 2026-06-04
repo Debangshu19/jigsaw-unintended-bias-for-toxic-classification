@@ -24,6 +24,7 @@ Recommended variants:
 
 - Baseline: TF-IDF + Logistic Regression, fast and explainable.
 - Main Raven model: fine-tuned DistilBERT, about 66M parameters before quantization.
+- Current ready-made server model: `unitary/toxic-bert`, used through `RAVEN_MODEL_ID` until the Raven checkpoint is trained.
 - Browser-local future path: ONNX-quantized DistilBERT with Transformers.js.
 
 ## Honest API Position
@@ -49,6 +50,15 @@ Then run the API with:
 ```bash
 cd raven-api
 export RAVEN_MODEL_DIR=/path/to/models/raven-distilbert
+export RAVEN_THRESHOLD=0.5
+uvicorn app:app --reload --port 8000
+```
+
+Temporary ready-made model path:
+
+```bash
+cd raven-api
+export RAVEN_MODEL_ID=unitary/toxic-bert
 export RAVEN_THRESHOLD=0.5
 uvicorn app:app --reload --port 8000
 ```
@@ -85,22 +95,23 @@ Response:
 1. Content script finds visible comment-like nodes.
 2. It sends text batches to `http://localhost:8000/predict-batch`.
 3. It highlights nodes where `needs_review` is true.
-4. The popup shows API status, last scan counts, and can trigger a manual rescan.
+4. The popup shows API status, last scan counts, can trigger a manual rescan, and can test one typed comment with Enter.
 5. If the API is unavailable, it uses the demo fallback only for UI testing.
 
 ## Website Demo Flow
 
-1. The Raven Lab textarea splits each line as one candidate comment.
-2. The website tries `POST http://localhost:8000/predict-batch`.
-3. If `raven-api` responds, the result panel shows the model/API source.
-4. If not, the result panel shows `browser-demo-fallback` so the demo remains usable without pretending a real model is running.
+1. The Raven Lab quick input scans one typed comment when Enter is pressed.
+2. The textarea splits each line as one candidate comment for batch review.
+3. The website tries `POST http://localhost:8000/predict-batch`.
+4. If `raven-api` responds, the result panel shows the model/API source.
+5. If not, the result panel shows `browser-demo-fallback` so the demo remains usable without pretending a real model is running.
 
 ## Mobile App
 
 The first Expo scaffold now lives in `raven-mobile`:
 
 - React Native/Expo app shell.
-- Paste comments, scan through `/predict-batch`, and render a review queue.
+- Type one comment with submit/Enter or paste comments, scan through `/predict-batch`, and render a review queue.
 - Uses the same local fallback approach as web/extension when the API is offline.
 - Next screens to add: onboarding, link scan, settings, and model confidence.
 
