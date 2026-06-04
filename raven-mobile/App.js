@@ -40,6 +40,15 @@ function linesFromText(text) {
   return text.split("\n").map((line) => line.trim()).filter(Boolean);
 }
 
+function formatSource(sourceName) {
+  if (!sourceName) return "Raven engine";
+  if (sourceName === "raven-hf-model" || sourceName === "raven-local-model" || sourceName === "raven-api") {
+    return "Raven engine";
+  }
+  if (sourceName.includes("fallback")) return "Demo fallback";
+  return sourceName;
+}
+
 export default function App() {
   const [text, setText] = useState(initialText);
   const [results, setResults] = useState(linesFromText(initialText).map((line) => ({ text: line, ...fallbackScore(line) })));
@@ -138,7 +147,7 @@ export default function App() {
           </Pressable>
           <Text style={[styles.quickResult, quickResult?.needs_review && styles.quickReview]}>
             {quickResult
-              ? `${quickResult.needs_review ? "Review" : "Safe"} · ${Math.round(quickResult.score * 100)}% · ${quickResult.source}`
+              ? `${quickResult.needs_review ? "Review" : "Safe"} · ${Math.round(quickResult.score * 100)}% · ${formatSource(quickResult.source)}`
               : "Enter a comment to scan it"}
           </Text>
         </View>
@@ -154,7 +163,7 @@ export default function App() {
         <Pressable style={styles.button} onPress={scan} disabled={loading}>
           <Text style={styles.buttonText}>{loading ? "Scanning..." : "Scan now"}</Text>
         </Pressable>
-        <Text style={styles.source}>Source: {source}</Text>
+        <Text style={styles.source}>Source: {formatSource(source)}</Text>
 
         <View style={styles.results}>
           {results.map((result, index) => (

@@ -38,6 +38,14 @@ export function scoreText(text) {
   };
 }
 
+export function formatSourceName(source) {
+  if (!source) return "Raven engine";
+  if (source === "raven-hf-model" || source === "raven-local-model") return "Raven engine";
+  if (source.includes("fallback")) return "Demo fallback";
+  if (source === "raven-api") return "Raven engine";
+  return source;
+}
+
 export async function checkRavenHealth() {
   const response = await fetch(`${RAVEN_API_URL}/health`);
   if (!response.ok) throw new Error(`Raven API returned ${response.status}`);

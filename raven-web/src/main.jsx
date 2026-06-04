@@ -15,7 +15,7 @@ import {
   X
 } from "lucide-react";
 import "./styles.css";
-import { checkRavenHealth, parseDemoLines, scoreText, scoreWithApi } from "./ravenClient";
+import { checkRavenHealth, formatSourceName, parseDemoLines, scoreText, scoreWithApi } from "./ravenClient";
 
 const howItWorks = [
   {
@@ -411,7 +411,7 @@ function App() {
                   {quickResult ? (
                     <>
                       <strong>{quickResult.needsReview ? "Review" : "Safe"}</strong>
-                      <span>{Math.round(quickResult.score * 100)}% · {quickResult.source}</span>
+                      <span>{Math.round(quickResult.score * 100)}% · {formatSourceName(quickResult.source)}</span>
                     </>
                   ) : (
                     <span>Enter a comment to scan it.</span>
@@ -454,7 +454,7 @@ function App() {
                       Raven Review Queue
                     </span>
                     <em className={demoSource === "browser-demo-fallback" ? "source-fallback" : ""}>
-                      {demoLoading ? "Scanning..." : demoSource}
+                      {demoLoading ? "Scanning..." : formatSourceName(demoSource)}
                     </em>
                   </div>
                   {demoResults.map((result, index) => (

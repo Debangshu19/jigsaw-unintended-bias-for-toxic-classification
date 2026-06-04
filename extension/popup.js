@@ -24,10 +24,19 @@ const fallbackTerms = [
   "harass"
 ];
 
+function formatSource(sourceName) {
+  if (!sourceName) return "Raven engine";
+  if (sourceName === "raven-hf-model" || sourceName === "raven-local-model" || sourceName === "raven-api") {
+    return "Raven engine";
+  }
+  if (sourceName.includes("fallback")) return "Demo fallback";
+  return sourceName;
+}
+
 function renderSummary(summary) {
   scanned.textContent = summary?.scanned ?? 0;
   flagged.textContent = summary?.flagged ?? 0;
-  source.textContent = summary?.source ? `Source: ${summary.source}` : "No scan yet";
+  source.textContent = summary?.source ? `Source: ${formatSource(summary.source)}` : "No scan yet";
 }
 
 async function checkApi() {
@@ -72,7 +81,7 @@ async function predictText(text) {
 
 function renderQuickResult(prediction) {
   quickResult.className = `quick-result ${prediction.needs_review ? "review" : "safe"}`;
-  quickResult.textContent = `${prediction.needs_review ? "Review" : "Safe"} · ${Math.round(prediction.score * 100)}% · ${prediction.source}`;
+  quickResult.textContent = `${prediction.needs_review ? "Review" : "Safe"} · ${Math.round(prediction.score * 100)}% · ${formatSource(prediction.source)}`;
 }
 
 async function loadLastScan() {
