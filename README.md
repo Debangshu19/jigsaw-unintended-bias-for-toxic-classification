@@ -65,7 +65,7 @@ export RAVEN_THRESHOLD=0.5
 uvicorn app:app --reload --port 8000
 ```
 
-Use this while the custom Raven checkpoint is still training:
+Use this stronger ready-made toxicity classifier while the custom Raven checkpoint is still training:
 
 ```bash
 export RAVEN_MODEL_ID=unitary/toxic-bert

@@ -24,6 +24,7 @@ Recommended variants:
 
 - Baseline: TF-IDF + Logistic Regression, fast and explainable.
 - Main Raven model: fine-tuned DistilBERT, about 66M parameters before quantization.
+- Current ready-made server model: `unitary/toxic-bert`, used through `RAVEN_MODEL_ID` until the Raven checkpoint is trained.
 - Browser-local future path: ONNX-quantized DistilBERT with Transformers.js.
 
 ## Honest API Position
@@ -49,6 +50,15 @@ Then run the API with:
 ```bash
 cd raven-api
 export RAVEN_MODEL_DIR=/path/to/models/raven-distilbert
+export RAVEN_THRESHOLD=0.5
+uvicorn app:app --reload --port 8000
+```
+
+Temporary ready-made model path:
+
+```bash
+cd raven-api
+export RAVEN_MODEL_ID=unitary/toxic-bert
 export RAVEN_THRESHOLD=0.5
 uvicorn app:app --reload --port 8000
 ```
