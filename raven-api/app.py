@@ -9,6 +9,10 @@ class PredictRequest(BaseModel):
     text: str = Field(..., min_length=1, max_length=5000)
 
 
+class ExplainRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=5000)
+
+
 class BatchPredictRequest(BaseModel):
     texts: list[str] = Field(..., min_length=1, max_length=100)
 
@@ -56,3 +60,11 @@ def predict(payload: PredictRequest):
 def predict_batch(payload: BatchPredictRequest):
     predictions = model.predict_batch(payload.texts)
     return {"predictions": [prediction.__dict__ for prediction in predictions]}
+
+
+@app.post("/explain")
+def explain(payload: ExplainRequest):
+    if hasattr(model, "explain_one"):
+        return model.explain_one(payload.text)
+    prediction = model.predict_one(payload.text)
+    return {**prediction.__dict__, "words": []}

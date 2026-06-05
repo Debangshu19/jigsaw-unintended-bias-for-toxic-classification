@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import "./styles.css";
 import Grainient from "./Grainient";
-import { scoreText, scoreWithApi } from "./ravenClient";
+import { explainText, prettyCategory, scoreText } from "./ravenClient";
 
 const howItWorks = [
   {
@@ -147,14 +147,52 @@ function ChatVerdict({ result }) {
   const percent = Math.round((result.score || 0) * 100);
   const { title, badge } = VERDICTS[tone];
 
+  const categories = result.categories || {};
+  const topCats = Object.entries(categories)
+    .filter(([key, value]) => key !== "toxic" && value >= 0.2)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+
+  const words = Array.isArray(result.words) ? result.words : [];
+  const maxImp = words.reduce((max, word) => Math.max(max, word.s || 0), 0);
+  const threshold = Math.max(0.05, maxImp * 0.22);
+  const hasHighlights = tone !== "safe" && maxImp > 0.05;
+  const showWhy = tone !== "safe" && (topCats.length > 0 || hasHighlights);
+
   return (
     <div className={`verdict tone-${tone}`}>
-      <span className="verdict-logo" aria-hidden="true" />
-      <strong className="verdict-title">{title}</strong>
-      <span className="verdict-chip">
-        {badge}
-        <em>{percent}%</em>
-      </span>
+      <div className="verdict-top">
+        <span className="verdict-logo" aria-hidden="true" />
+        <strong className="verdict-title">{title}</strong>
+        <span className="verdict-chip">
+          {badge}
+          <em>{percent}%</em>
+        </span>
+      </div>
+
+      {showWhy && (
+        <div className="verdict-why">
+          {topCats.length > 0 && (
+            <div className="verdict-cats">
+              {topCats.map(([key, value]) => (
+                <span className="cat-chip" key={key}>
+                  {prettyCategory(key)} <i>{Math.round(value * 100)}%</i>
+                </span>
+              ))}
+            </div>
+          )}
+          {hasHighlights && (
+            <p className="verdict-text">
+              {words.map((word, index) => (
+                <span key={index} className={(word.s || 0) >= threshold ? "tox-word" : ""}>
+                  {word.w}
+                  {index < words.length - 1 ? " " : ""}
+                </span>
+              ))}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -225,10 +263,9 @@ function App() {
 
       let result;
       try {
-        const [apiResult] = await scoreWithApi([text]);
-        result = apiResult;
+        result = await explainText(text);
       } catch {
-        result = { text, ...scoreText(text) };
+        result = { text, ...scoreText(text), categories: {}, top_category: null, words: [] };
       }
 
       const ravenMessage = { id: nextId(), role: "raven", text, result };
