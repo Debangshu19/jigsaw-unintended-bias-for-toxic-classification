@@ -1,20 +1,64 @@
-.raven-needs-review {
-  outline: 2px solid #f59e0b !important;
-  outline-offset: 3px !important;
-  border-radius: 8px !important;
-  background: rgba(245, 158, 11, 0.12) !important;
-}
-
-.raven-badge {
+/* Raven inline verdict pill — injected into each post header */
+.raven-pill {
   display: inline-flex !important;
   align-items: center !important;
-  width: fit-content !important;
-  margin-top: 6px !important;
-  padding: 4px 8px !important;
-  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+  gap: 5px !important;
+  height: 22px !important;
+  margin: 0 0 0 8px !important;
+  padding: 0 9px 0 7px !important;
   border-radius: 999px !important;
-  background: #fff8e5 !important;
-  color: #9a5a00 !important;
-  font: 600 12px/1.2 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-  z-index: 2147483647 !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  color: #fff !important;
+  font: 700 12px/1 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif !important;
+  letter-spacing: -0.01em !important;
+  vertical-align: middle !important;
+  white-space: nowrap !important;
+  cursor: default !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.42), 0 2px 7px rgba(0, 0, 0, 0.22) !important;
+  -webkit-text-fill-color: #fff !important;
+  flex: 0 0 auto !important;
+}
+
+.raven-pill-mark {
+  width: 13px !important;
+  height: 13px !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+}
+
+.raven-pill-text {
+  font-weight: 700 !important;
+}
+
+.raven-pill-pct {
+  padding-left: 6px !important;
+  margin-left: 2px !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.32) !important;
+  font-weight: 800 !important;
+  opacity: 0.95 !important;
+}
+
+/* Tier colors: blue = safe, yellow = borderline, red = toxic */
+.raven-pill.raven-safe {
+  background: linear-gradient(180deg, #7cc6ff 0%, #2589ff 100%) !important;
+  border-color: rgba(37, 141, 255, 0.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 3px 9px rgba(0, 112, 255, 0.4) !important;
+}
+
+.raven-pill.raven-borderline {
+  background: linear-gradient(180deg, #fbc02d 0%, #e0820a 100%) !important;
+  border-color: rgba(184, 120, 10, 0.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 3px 9px rgba(232, 135, 10, 0.4) !important;
+}
+
+.raven-pill.raven-toxic {
+  background: linear-gradient(180deg, #ff7a5c 0%, #e0381f 100%) !important;
+  border-color: rgba(220, 40, 30, 0.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 3px 9px rgba(220, 40, 30, 0.42) !important;
+}
+
+/* Subtle accent on flagged (toxic) posts */
+.raven-flagged {
+  box-shadow: inset 3px 0 0 #e0381f !important;
+  background: rgba(224, 56, 31, 0.045) !important;
 }

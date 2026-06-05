@@ -1,20 +1,45 @@
 {
   "manifest_version": 3,
   "name": "Raven Comment Shield",
-  "version": "0.1.0",
-  "description": "Highlights visible comments that Raven marks for review.",
+  "version": "0.3.0",
+  "description": "Raven auto-flags toxic comments inline on X/Twitter, YouTube and Instagram.",
   "permissions": ["storage", "activeTab"],
   "host_permissions": ["http://localhost:8000/*"],
+  "icons": {
+    "16": "icons/raven-16.png",
+    "32": "icons/raven-32.png",
+    "48": "icons/raven-48.png",
+    "128": "icons/raven-128.png"
+  },
   "action": {
     "default_title": "Raven",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/raven-16.png",
+      "32": "icons/raven-32.png",
+      "48": "icons/raven-48.png",
+      "128": "icons/raven-128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
-      "matches": ["https://*.youtube.com/*", "https://*.twitter.com/*", "https://*.x.com/*", "https://*.instagram.com/*"],
+      "matches": [
+        "https://x.com/*",
+        "https://*.x.com/*",
+        "https://twitter.com/*",
+        "https://*.twitter.com/*",
+        "https://www.youtube.com/*",
+        "https://*.youtube.com/*",
+        "https://www.instagram.com/*",
+        "https://*.instagram.com/*"
+      ],
       "js": ["content.js"],
       "css": ["styles.css"],
-      "run_at": "document_idle"
+      "run_at": "document_idle",
+      "all_frames": false
     }
   ]
 }

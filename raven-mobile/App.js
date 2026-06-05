@@ -45,6 +45,7 @@ function formatSource(sourceName) {
   if (sourceName === "raven-hf-model" || sourceName === "raven-local-model" || sourceName === "raven-api") {
     return "Raven engine";
   }
+  if (sourceName === "raven-ai-gateway-fallback") return "Raven fallback";
   if (sourceName.includes("fallback")) return "Demo fallback";
   return sourceName;
 }

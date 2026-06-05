@@ -31,6 +31,7 @@ def health():
         "ok": True,
         "source": getattr(model, "source", "unknown"),
         "model_ref": getattr(model, "model_ref", None),
+        "fallback_source": getattr(model, "fallback_source", None),
     }
 
 
@@ -40,6 +41,7 @@ def metadata():
         "name": "Raven",
         "source": getattr(model, "source", "unknown"),
         "model_ref": getattr(model, "model_ref", None),
+        "fallback_source": getattr(model, "fallback_source", None),
         "threshold": getattr(model, "threshold", None),
         "endpoints": ["/health", "/metadata", "/predict", "/predict-batch"],
     }

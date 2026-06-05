@@ -73,6 +73,16 @@ export RAVEN_THRESHOLD=0.5
 uvicorn app:app --reload --port 8000
 ```
 
+Optional AI Gateway fallback:
+
+```bash
+export AI_GATEWAY_API_KEY=...
+export RAVEN_AI_GATEWAY_MODEL=google/gemini-3.5-flash
+uvicorn app:app --reload --port 8000
+```
+
+The key must stay in the environment. Do not commit it to the repo.
+
 Smoke test:
 
 ```bash
