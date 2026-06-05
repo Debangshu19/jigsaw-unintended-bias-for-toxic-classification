@@ -4,6 +4,21 @@ const BATCH_SIZE = 25;
 const SVGNS = "http://www.w3.org/2000/svg";
 
 const TIER_LABEL = { safe: "Safe", borderline: "Borderline", toxic: "Toxic" };
+const CATEGORY_LABELS = {
+  toxic: "Toxic",
+  severe_toxic: "Severe",
+  severe_toxicity: "Severe",
+  obscene: "Obscene",
+  threat: "Threat",
+  insult: "Insult",
+  identity_hate: "Identity hate",
+  identity_attack: "Identity hate"
+};
+
+function prettyCategory(name) {
+  if (!name) return "";
+  return CATEGORY_LABELS[name] || name.replace(/_/g, " ");
+}
 
 const fallbackTerms = [
   "aggressive", "attack", "bully", "hate", "hurt", "insult", "kill",
@@ -72,14 +87,26 @@ function ravenMark() {
 function buildPill(prediction) {
   const tier = tierFor(prediction);
   const percent = Math.round((prediction.score || 0) * 100);
+  const categories = prediction.categories || {};
+  const top = prediction.top_category;
+
+  // Toxic pills name the specific type ("Insult", "Identity hate"); others stay generic.
+  const labelText = tier === "toxic" && top && top !== "toxic" ? prettyCategory(top) : TIER_LABEL[tier];
+
+  const breakdown = Object.entries(categories)
+    .filter(([key, value]) => key !== "toxic" && value >= 0.15)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4)
+    .map(([key, value]) => `${prettyCategory(key).toLowerCase()} ${Math.round(value * 100)}%`)
+    .join(" · ");
 
   const pill = document.createElement("span");
   pill.className = `raven-pill raven-${tier}`;
-  pill.title = `Raven · ${TIER_LABEL[tier]} · ${percent}% toxic`;
+  pill.title = `Raven · ${TIER_LABEL[tier]} · ${percent}% toxic` + (breakdown ? `\n${breakdown}` : "");
 
   const label = document.createElement("span");
   label.className = "raven-pill-text";
-  label.textContent = TIER_LABEL[tier];
+  label.textContent = labelText;
 
   const pct = document.createElement("span");
   pct.className = "raven-pill-pct";

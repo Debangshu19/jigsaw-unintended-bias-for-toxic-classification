@@ -1,6 +1,6 @@
 import os
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterable
 
 DEFAULT_THRESHOLD = 0.5
@@ -20,12 +20,26 @@ TOXIC_LABEL_HINTS = (
 SAFE_LABEL_HINTS = ("safe", "clean", "neutral", "normal", "non_toxic", "not_toxic", "non-toxic")
 
 
+CATEGORY_LABELS = {
+    "toxic": "Toxic",
+    "severe_toxic": "Severe toxic",
+    "severe_toxicity": "Severe toxic",
+    "obscene": "Obscene",
+    "threat": "Threat",
+    "insult": "Insult",
+    "identity_hate": "Identity hate",
+    "identity_attack": "Identity hate",
+}
+
+
 @dataclass
 class Prediction:
     label: str
     score: float
     needs_review: bool
     source: str
+    categories: dict = field(default_factory=dict)
+    top_category: str = None
 
 
 class DemoFallbackModel:
@@ -65,6 +79,19 @@ class DemoFallbackModel:
 
     def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
         return [self.predict_one(text) for text in texts]
+
+    def explain_one(self, text: str) -> dict:
+        prediction = self.predict_one(text)
+        words = []
+        for word in text.split()[:60]:
+            cleaned = word.lower().strip(".,!?\"'();:")
+            hit = any(term in cleaned for term in self.review_terms)
+            words.append({"w": word, "s": 0.3 if hit else 0.0})
+        out = prediction.__dict__.copy()
+        out["categories"] = {"toxic": prediction.score} if prediction.score else {}
+        out["top_category"] = "toxic" if prediction.needs_review else None
+        out["words"] = words
+        return out
 
 
 class AiGatewayFallbackModel:
@@ -123,6 +150,14 @@ class AiGatewayFallbackModel:
     def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
         return [self.predict_one(text) for text in texts]
 
+    def explain_one(self, text: str) -> dict:
+        prediction = self.predict_one(text)
+        out = prediction.__dict__.copy()
+        out["categories"] = {"toxic": prediction.score} if prediction.score else {}
+        out["top_category"] = "toxic" if prediction.needs_review else None
+        out["words"] = [{"w": word, "s": 0.0} for word in text.split()[:60]]
+        return out
+
 
 class ResilientModel:
     def __init__(self, primary, fallback) -> None:
@@ -145,6 +180,12 @@ class ResilientModel:
             return self.primary.predict_batch(texts)
         except Exception:
             return self.fallback.predict_batch(texts)
+
+    def explain_one(self, text: str) -> dict:
+        try:
+            return self.primary.explain_one(text)
+        except Exception:
+            return self.fallback.explain_one(text)
 
 
 class TransformersModel:
@@ -190,17 +231,51 @@ class TransformersModel:
         toxic_index = toxic_indexes[0] if toxic_indexes else min(1, label_count - 1)
         return float(probs[toxic_index])
 
-    def _prediction(self, score: float) -> Prediction:
+    def _toxic_indexes(self, label_count: int) -> list:
+        return [
+            index
+            for index in range(label_count)
+            if any(hint in self.id2label.get(index, "") for hint in TOXIC_LABEL_HINTS)
+            and not any(hint in self.id2label.get(index, "") for hint in SAFE_LABEL_HINTS)
+        ]
+
+    def _category_scores(self, logits) -> dict:
+        label_count = int(logits.shape[-1])
+        toxic_indexes = self._toxic_indexes(label_count)
+        # Multi-label heads (e.g. toxic-bert): independent sigmoid per category.
+        if len(toxic_indexes) > 1:
+            probs = self.torch.sigmoid(logits)
+            return {self.id2label.get(i, f"label_{i}"): round(float(probs[i]), 4) for i in toxic_indexes}
+        # Single toxic head (binary fine-tuned model): one category.
+        return {"toxic": round(self._toxic_score(logits), 4)}
+
+    def _top_category(self, categories: dict):
+        if not categories:
+            return None
+        # Prefer the most specific type (insult, threat, identity hate…) over the
+        # generic "toxic" umbrella, when one is meaningfully present.
+        specific = {k: v for k, v in categories.items() if k != "toxic"}
+        if specific:
+            best = max(specific, key=specific.get)
+            if specific[best] >= 0.15:
+                return best
+        return max(categories, key=categories.get)
+
+    def _prediction_from_logits(self, logits) -> Prediction:
+        score = self._toxic_score(logits)
+        categories = self._category_scores(logits)
+        top_category = self._top_category(categories)
         needs_review = score >= self.threshold
         return Prediction(
             label="review" if needs_review else "safe",
             score=round(score, 4),
             needs_review=needs_review,
             source=self.source,
+            categories=categories,
+            top_category=top_category,
         )
 
-    def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
-        texts = list(texts)
+    def _logits_for(self, texts: list):
         inputs = self.tokenizer(
             texts,
             return_tensors="pt",
@@ -208,11 +283,30 @@ class TransformersModel:
             padding=True,
             max_length=128,
         )
-
         with self.torch.no_grad():
-            outputs = self.model(**inputs)
+            return self.model(**inputs).logits
 
-        return [self._prediction(self._toxic_score(row)) for row in outputs.logits]
+    def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
+        logits = self._logits_for(list(texts))
+        return [self._prediction_from_logits(row) for row in logits]
+
+    def explain_one(self, text: str) -> dict:
+        words = text.split()[:60]
+        if not words:
+            return {**self.predict_one(text).__dict__, "words": []}
+
+        # Leave-one-out occlusion: how much does removing each word drop the toxicity?
+        variants = [text] + [" ".join(words[:i] + words[i + 1:]) for i in range(len(words))]
+        logits = self._logits_for(variants)
+        base = self._toxic_score(logits[0])
+        word_scores = [
+            {"w": word, "s": round(float(base - self._toxic_score(logits[i + 1])), 4)}
+            for i, word in enumerate(words)
+        ]
+
+        out = self._prediction_from_logits(logits[0]).__dict__.copy()
+        out["words"] = word_scores
+        return out
 
 
 def load_model():

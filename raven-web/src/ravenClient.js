@@ -38,6 +38,22 @@ export function scoreText(text) {
   };
 }
 
+export const CATEGORY_LABELS = {
+  toxic: "Toxic",
+  severe_toxic: "Severe toxic",
+  severe_toxicity: "Severe toxic",
+  obscene: "Obscene",
+  threat: "Threat",
+  insult: "Insult",
+  identity_hate: "Identity hate",
+  identity_attack: "Identity hate"
+};
+
+export function prettyCategory(name) {
+  if (!name) return "";
+  return CATEGORY_LABELS[name] || name.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
+}
+
 export function formatSourceName(source) {
   if (!source) return "Raven engine";
   if (source === "raven-hf-model" || source === "raven-local-model") return "Raven engine";
@@ -76,6 +92,34 @@ export async function scoreWithApi(lines, signal) {
     needsReview: Boolean(prediction.needs_review),
     needs_review: Boolean(prediction.needs_review),
     label: prediction.label || (prediction.needs_review ? "review" : "safe"),
-    source: prediction.source || "raven-api"
+    source: prediction.source || "raven-api",
+    categories: prediction.categories || {},
+    top_category: prediction.top_category || null
   }));
+}
+
+export async function explainText(text, signal) {
+  const response = await fetch(`${RAVEN_API_URL}/explain`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text }),
+    signal
+  });
+
+  if (!response.ok) {
+    throw new Error(`Raven API returned ${response.status}`);
+  }
+
+  const data = await response.json();
+  return {
+    text,
+    score: Number(data.score) || 0,
+    needsReview: Boolean(data.needs_review),
+    needs_review: Boolean(data.needs_review),
+    label: data.label || (data.needs_review ? "review" : "safe"),
+    source: data.source || "raven-api",
+    categories: data.categories || {},
+    top_category: data.top_category || null,
+    words: Array.isArray(data.words) ? data.words : []
+  };
 }
