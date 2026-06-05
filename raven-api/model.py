@@ -1,8 +1,11 @@
 import os
+import json
 from dataclasses import dataclass
 from typing import Iterable
 
 DEFAULT_THRESHOLD = 0.5
+AI_GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions"
+AI_GATEWAY_MODEL = os.getenv("RAVEN_AI_GATEWAY_MODEL", "google/gemini-3.5-flash")
 TOXIC_LABEL_HINTS = (
     "toxic",
     "severe",
@@ -62,6 +65,86 @@ class DemoFallbackModel:
 
     def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
         return [self.predict_one(text) for text in texts]
+
+
+class AiGatewayFallbackModel:
+    source = "raven-ai-gateway-fallback"
+
+    def __init__(self) -> None:
+        self.api_key = os.getenv("AI_GATEWAY_API_KEY")
+        self.threshold = float(os.getenv("RAVEN_THRESHOLD", DEFAULT_THRESHOLD))
+        self.model_ref = AI_GATEWAY_MODEL
+        if not self.api_key:
+            raise RuntimeError("AI_GATEWAY_API_KEY is not configured")
+
+    def predict_one(self, text: str) -> Prediction:
+        import httpx
+
+        response = httpx.post(
+            AI_GATEWAY_URL,
+            headers={
+                "Authorization": f"Bearer {self.api_key}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "model": self.model_ref,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": (
+                            "You are Raven, a strict toxicity classifier for public social media comments. "
+                            "Classify hate speech, harassment, insults, severe profanity, threats, and identity attacks as review. "
+                            "Classify normal disagreement, criticism without abuse, and neutral comments as safe. "
+                            "Return only compact JSON with keys label, score, needs_review. "
+                            "label must be safe or review. score must be a number from 0 to 1."
+                        ),
+                    },
+                    {"role": "user", "content": text},
+                ],
+                "temperature": 0,
+                "response_format": {"type": "json_object"},
+            },
+            timeout=18,
+        )
+        response.raise_for_status()
+        content = response.json()["choices"][0]["message"]["content"]
+        data = json.loads(content)
+        score = max(0.0, min(1.0, float(data.get("score", 0))))
+        needs_review = bool(data.get("needs_review", score >= self.threshold))
+        label = "review" if needs_review else "safe"
+
+        return Prediction(
+            label=label,
+            score=round(score, 4),
+            needs_review=needs_review,
+            source=self.source,
+        )
+
+    def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
+        return [self.predict_one(text) for text in texts]
+
+
+class ResilientModel:
+    def __init__(self, primary, fallback) -> None:
+        self.primary = primary
+        self.fallback = fallback
+        self.source = getattr(primary, "source", "raven-primary-model")
+        self.fallback_source = getattr(fallback, "source", "unknown")
+        self.threshold = getattr(primary, "threshold", getattr(fallback, "threshold", DEFAULT_THRESHOLD))
+        self.model_ref = getattr(primary, "model_ref", None)
+
+    def predict_one(self, text: str) -> Prediction:
+        try:
+            return self.primary.predict_one(text)
+        except Exception:
+            return self.fallback.predict_one(text)
+
+    def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
+        texts = list(texts)
+        try:
+            return self.primary.predict_batch(texts)
+        except Exception:
+            return self.fallback.predict_batch(texts)
 
 
 class TransformersModel:
@@ -133,12 +216,25 @@ class TransformersModel:
 
 
 def load_model():
+    fallback = DemoFallbackModel()
+    if os.getenv("AI_GATEWAY_API_KEY"):
+        try:
+            fallback = AiGatewayFallbackModel()
+        except Exception:
+            fallback = DemoFallbackModel()
+
     model_dir = os.getenv("RAVEN_MODEL_DIR")
     if model_dir and os.path.isdir(model_dir):
-        return TransformersModel(model_dir, "raven-local-model")
+        try:
+            return ResilientModel(TransformersModel(model_dir, "raven-local-model"), fallback)
+        except Exception:
+            return fallback
 
     model_id = os.getenv("RAVEN_MODEL_ID")
     if model_id:
-        return TransformersModel(model_id, "raven-hf-model")
+        try:
+            return ResilientModel(TransformersModel(model_id, "raven-hf-model"), fallback)
+        except Exception:
+            return fallback
 
-    return DemoFallbackModel()
+    return fallback

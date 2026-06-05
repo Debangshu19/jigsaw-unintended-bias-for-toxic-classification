@@ -41,6 +41,7 @@ export function scoreText(text) {
 export function formatSourceName(source) {
   if (!source) return "Raven engine";
   if (source === "raven-hf-model" || source === "raven-local-model") return "Raven engine";
+  if (source === "raven-ai-gateway-fallback") return "Raven fallback";
   if (source.includes("fallback")) return "Demo fallback";
   if (source === "raven-api") return "Raven engine";
   return source;

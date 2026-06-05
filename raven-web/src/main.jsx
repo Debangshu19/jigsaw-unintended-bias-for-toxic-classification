@@ -1,55 +1,57 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
-  ArrowDownToLine,
+  ArrowLeft,
+  ArrowUp,
   BrainCircuit,
   CheckCircle2,
-  ExternalLink,
   Menu,
+  MessageSquare,
+  Play,
+  Plus,
   Puzzle,
-  RefreshCw,
   ScanLine,
-  Send,
   Server,
-  ShieldCheck,
+  Trash2,
   X
 } from "lucide-react";
 import "./styles.css";
-import { checkRavenHealth, formatSourceName, parseDemoLines, scoreText, scoreWithApi } from "./ravenClient";
+import Grainient from "./Grainient";
+import { scoreText, scoreWithApi } from "./ravenClient";
 
 const howItWorks = [
   {
-    img: "/assets/raven-onboarding.svg",
-    title: "Load Raven",
-    desc: "Use the Raven model service or connect your fine-tuned DistilBERT checkpoint."
+    img: "/assets/raven-playground-card.png",
+    title: "Open the playground",
+    desc: "Type a post, press Enter, and see the Raven score without crowding the landing page."
   },
   {
-    img: "/assets/raven-scan.svg",
-    title: "Scan the page",
-    desc: "Raven reads visible comments and scores what needs human review."
+    img: "/assets/raven-x-inline-card.png",
+    title: "Scan the web feed",
+    desc: "Raven reads visible post text and places a quiet score beside the content."
   },
   {
-    img: "/assets/raven-extension.svg",
+    img: "/assets/raven-review-queue-card.png",
     title: "Highlight risky posts",
-    desc: "The extension marks concerning comments in place without changing the original page."
+    desc: "Safe posts stay calm. Toxic posts move into a clean review queue."
   }
 ];
 
 const features = [
   {
-    img: "/assets/raven-scan.svg",
-    title: "See exactly what needs review",
+    img: "/assets/raven-web-showcase.png",
+    title: "Built around the web, not a phone mockup",
     desc: "Raven keeps safe comments quiet and highlights borderline or harmful text with confidence signals."
   },
   {
-    img: "/assets/raven-dashboard.svg",
-    title: "Use a model you can actually own",
-    desc: "Start with the DistilBERT notebook work already in this repo, export it, and serve it as Raven."
+    img: "/assets/raven-fallback-card.png",
+    title: "Local model first. Fallback ready.",
+    desc: "Serve your model locally and keep an AI Gateway fallback available for outages."
   },
   {
-    img: "/assets/raven-extension.svg",
-    title: "Built for social feeds",
-    desc: "The browser extension prototype scans visible comment areas on pages like video, post, and thread views."
+    img: "/assets/raven-x-inline-card.png",
+    title: "Designed for X/Twitter timelines",
+    desc: "The extension integrates into social pages with inline score chips instead of a separate phone screen."
   }
 ];
 
@@ -74,14 +76,12 @@ const pipeline = [
   }
 ];
 
-const demoSamples = [
-  "Great article. Thanks for sharing this perspective.",
-  "That was not cool. Let's keep the discussion respectful.",
-  "I disagree with the point, but the explanation helped.",
-  "This sounds aggressive and should be reviewed by a moderator."
+const chatSamples = [
+  "You are absolutely stupid and everyone hates you.",
+  "Great article, thanks for sharing this perspective!",
+  "I disagree with your take, but I respect the effort.",
+  "Shut up you worthless loser, nobody wants you here."
 ];
-
-const quickSample = "This comment is aggressive and should be reviewed.";
 
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
@@ -123,149 +123,252 @@ function Reveal({ children, delay = 0, className = "" }) {
 
 function Logo({ light = false }) {
   return (
-    <a className="brand" href="#top" aria-label="Raven home">
-      <span className="brand-mark">R</span>
+    <a className="brand" href="/" aria-label="Raven home">
+      <span className="brand-mark" aria-hidden="true" />
       <span className={light ? "brand-name is-light" : "brand-name"}>raven</span>
     </a>
   );
 }
 
+const VERDICTS = {
+  toxic: { title: "This is toxic", badge: "Toxic" },
+  borderline: { title: "Looks borderline", badge: "Borderline" },
+  safe: { title: "This is safe", badge: "Safe" }
+};
+
+function toneFor(result) {
+  if (result.needsReview) return "toxic";
+  if ((result.score || 0) >= 0.35) return "borderline";
+  return "safe";
+}
+
+function ChatVerdict({ result }) {
+  const tone = toneFor(result);
+  const percent = Math.round((result.score || 0) * 100);
+  const { title, badge } = VERDICTS[tone];
+
+  return (
+    <div className={`verdict tone-${tone}`}>
+      <span className="verdict-logo" aria-hidden="true" />
+      <strong className="verdict-title">{title}</strong>
+      <span className="verdict-chip">
+        {badge}
+        <em>{percent}%</em>
+      </span>
+    </div>
+  );
+}
+
+function loadConversations() {
+  try {
+    const raw = window.localStorage.getItem("ravenChats");
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 function App() {
+  const [route, setRoute] = useState(() => (window.location.pathname === "/playground" ? "playground" : "home"));
   const [navLight, setNavLight] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [demoText, setDemoText] = useState(demoSamples.join("\n"));
-  const [scanNonce, setScanNonce] = useState(0);
-  const [demoResults, setDemoResults] = useState(() =>
-    demoSamples.map((line) => ({ text: line, ...scoreText(line) }))
-  );
-  const [demoSource, setDemoSource] = useState("browser-demo-fallback");
-  const [demoLoading, setDemoLoading] = useState(false);
-  const [apiHealth, setApiHealth] = useState({ state: "checking", source: "checking" });
-  const [quickText, setQuickText] = useState(quickSample);
-  const [quickResult, setQuickResult] = useState(() => ({ text: quickSample, ...scoreText(quickSample) }));
-  const [quickLoading, setQuickLoading] = useState(false);
-  const quickInputRef = useRef(null);
 
-  const demoLines = useMemo(() => parseDemoLines(demoText), [demoText]);
+  const [conversations, setConversations] = useState(loadConversations);
+  const [activeId, setActiveId] = useState(null);
+  const [input, setInput] = useState("");
+  const [pending, setPending] = useState(false);
 
-  const checkApiHealth = useCallback(async () => {
-    setApiHealth((current) => ({ ...current, state: "checking" }));
+  const composerRef = useRef(null);
+  const threadRef = useRef(null);
+  const idRef = useRef(0);
 
+  const nextId = () => {
+    idRef.current += 1;
+    return idRef.current;
+  };
+
+  const activeChat = conversations.find((c) => c.id === activeId) || null;
+  const messages = activeChat ? activeChat.messages : [];
+
+  useEffect(() => {
     try {
-      const health = await checkRavenHealth();
-      setApiHealth({ state: "online", source: health.source || "raven-api" });
-      return health;
+      window.localStorage.setItem("ravenChats", JSON.stringify(conversations));
     } catch {
-      setApiHealth({ state: "offline", source: "browser fallback" });
-      return null;
+      /* storage unavailable */
     }
+  }, [conversations]);
+
+  const sendMessage = useCallback(
+    async (raw) => {
+      const text = (raw ?? input).trim();
+      if (!text || pending) return;
+
+      setInput("");
+      if (composerRef.current) composerRef.current.style.height = "auto";
+
+      const userMessage = { id: nextId(), role: "user", text };
+      let convId = activeId;
+
+      if (convId == null) {
+        convId = `chat-${nextId()}`;
+        const title = text.length > 42 ? `${text.slice(0, 42)}…` : text;
+        setConversations((prev) => [{ id: convId, title, messages: [userMessage] }, ...prev]);
+        setActiveId(convId);
+      } else {
+        setConversations((prev) =>
+          prev.map((c) => (c.id === convId ? { ...c, messages: [...c.messages, userMessage] } : c))
+        );
+      }
+
+      setPending(true);
+
+      let result;
+      try {
+        const [apiResult] = await scoreWithApi([text]);
+        result = apiResult;
+      } catch {
+        result = { text, ...scoreText(text) };
+      }
+
+      const ravenMessage = { id: nextId(), role: "raven", text, result };
+      setConversations((prev) =>
+        prev.map((c) => (c.id === convId ? { ...c, messages: [...c.messages, ravenMessage] } : c))
+      );
+      setPending(false);
+      window.setTimeout(() => composerRef.current?.focus(), 0);
+    },
+    [input, pending, activeId]
+  );
+
+  const newChat = useCallback(() => {
+    setActiveId(null);
+    setInput("");
+    if (composerRef.current) composerRef.current.style.height = "auto";
+    window.setTimeout(() => composerRef.current?.focus(), 0);
+  }, []);
+
+  const deleteChat = useCallback(
+    (event, id) => {
+      event.stopPropagation();
+      setConversations((prev) => prev.filter((c) => c.id !== id));
+      setActiveId((current) => (current === id ? null : current));
+    },
+    []
+  );
+
+  useEffect(() => {
+    const node = threadRef.current;
+    if (node) node.scrollTo({ top: node.scrollHeight, behavior: "smooth" });
+  }, [activeId, messages.length, pending]);
+
+  useEffect(() => {
+    const onPopState = () => setRoute(window.location.pathname === "/playground" ? "playground" : "home");
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const navigate = useCallback((path) => {
+    setMenuOpen(false);
+    if (window.location.pathname !== path) {
+      window.history.pushState({}, "", path);
+    }
+    setRoute(path === "/playground" ? "playground" : "home");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   useEffect(() => {
-    checkApiHealth();
-  }, [checkApiHealth]);
-
-  useEffect(() => {
-    const controller = new AbortController();
-
-    if (!demoLines.length) {
-      setDemoResults([]);
-      setDemoSource("empty");
-      setDemoLoading(false);
-      return () => controller.abort();
-    }
-
-    setDemoLoading(true);
-    const timer = window.setTimeout(async () => {
-      try {
-        const apiResults = await scoreWithApi(demoLines, controller.signal);
-        setDemoResults(apiResults);
-        setDemoSource(apiResults[0]?.source || "raven-api");
-        setApiHealth({ state: "online", source: apiResults[0]?.source || "raven-api" });
-      } catch (error) {
-        if (controller.signal.aborted) return;
-        setDemoResults(demoLines.map((line) => ({ text: line, ...scoreText(line) })));
-        setDemoSource("browser-demo-fallback");
-        setApiHealth({ state: "offline", source: "browser fallback" });
-      } finally {
-        if (!controller.signal.aborted) setDemoLoading(false);
-      }
-    }, 320);
-
-    return () => {
-      window.clearTimeout(timer);
-      controller.abort();
-    };
-  }, [demoLines, scanNonce]);
+    if (route !== "playground") return undefined;
+    const node = composerRef.current;
+    const timer = window.setTimeout(() => node?.focus(), 180);
+    return () => window.clearTimeout(timer);
+  }, [route]);
 
   useEffect(() => {
     const onScroll = () => {
       const section = document.getElementById("how-it-works");
-      if (!section) return;
+      if (!section || route === "playground") {
+        setNavLight(route === "playground");
+        return;
+      }
       setNavLight(section.getBoundingClientRect().top <= 68);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [route]);
 
-  const focusDemo = useCallback((event) => {
-    event?.preventDefault();
-    setMenuOpen(false);
-    document.getElementById("demo")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    window.setTimeout(() => quickInputRef.current?.focus(), 520);
-  }, []);
-
-  const runQuickScan = useCallback(
-    async (event) => {
+  const openPlayground = useCallback(
+    (event) => {
       event?.preventDefault();
-      const line = quickText.trim();
+      navigate("/playground");
+    },
+    [navigate]
+  );
 
-      if (!line) {
-        setQuickResult(null);
-        return;
-      }
-
-      setQuickLoading(true);
-      try {
-        const [apiResult] = await scoreWithApi([line]);
-        setQuickResult(apiResult);
-        setApiHealth({ state: "online", source: apiResult?.source || "raven-api" });
-      } catch {
-        setQuickResult({ text: line, ...scoreText(line) });
-        setApiHealth({ state: "offline", source: "browser fallback" });
-      } finally {
-        setQuickLoading(false);
+  const onComposerKeyDown = useCallback(
+    (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendMessage();
       }
     },
-    [quickText]
+    [sendMessage]
   );
 
   const navLinks = [
     ["#how-it-works", "How it works"],
     ["#features", "Features"],
-    ["#engine", "Engine"]
+    ["#extension", "Extension"]
   ];
+  const visibleNavLinks = route === "home" ? navLinks : [
+    ["/", "Home"],
+    ["/#how-it-works", "How it works"],
+    ["/#extension", "Extension"]
+  ];
+
+  const handleNavClick = useCallback(
+    (event, href) => {
+      if (!href.startsWith("/")) {
+        setMenuOpen(false);
+        return;
+      }
+
+      event.preventDefault();
+      const [, hash] = href.split("#");
+      navigate("/");
+      if (hash) {
+        window.setTimeout(() => document.getElementById(hash)?.scrollIntoView({ behavior: "smooth" }), 180);
+      }
+    },
+    [navigate]
+  );
 
   return (
     <div id="top" className="site-shell">
-      <nav className={`nav ${navLight ? "nav-light" : ""}`}>
+      <nav className={`nav ${navLight ? "nav-light" : ""} ${route === "playground" ? "nav-app" : ""}`}>
         <div className="nav-inner">
           <Logo light={navLight} />
           <div className="nav-links">
-            {navLinks.map(([href, label]) => (
-              <a key={href} href={href}>
+            {visibleNavLinks.map(([href, label]) => (
+              <a key={href} href={href} onClick={(event) => handleNavClick(event, href)}>
                 {label}
               </a>
             ))}
           </div>
           <div className="nav-actions">
-            <span className={`api-pill ${apiHealth.state}`}>{apiHealth.state === "online" ? "API online" : apiHealth.state === "checking" ? "Checking" : "Fallback"}</span>
-            <a className="gradient-btn nav-cta" href="#demo" onClick={focusDemo}>
-              <ArrowDownToLine size={18} />
-              Try Demo
-            </a>
+            {route === "home" ? (
+              <a className="gradient-btn nav-cta" href="/playground" onClick={openPlayground}>
+                <Play size={18} />
+                Playground
+              </a>
+            ) : (
+              <a className="nav-ghost" href="/" onClick={(event) => { event.preventDefault(); navigate("/"); }}>
+                <ArrowLeft size={16} />
+                Home
+              </a>
+            )}
           </div>
           <button className="menu-button" type="button" aria-label="Menu" onClick={() => setMenuOpen(!menuOpen)}>
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -275,19 +378,21 @@ function App() {
 
       {menuOpen && (
         <div className="mobile-menu">
-          {navLinks.map(([href, label]) => (
-            <a key={href} href={href} onClick={() => setMenuOpen(false)}>
+          {visibleNavLinks.map(([href, label]) => (
+            <a key={href} href={href} onClick={(event) => handleNavClick(event, href)}>
               {label}
             </a>
           ))}
-          <a className="gradient-btn" href="#demo" onClick={focusDemo}>
+          <a className="gradient-btn" href="/playground" onClick={openPlayground}>
             <ScanLine size={18} />
-            Try Demo
+            Playground
           </a>
         </div>
       )}
 
       <main>
+        {route === "home" && (
+          <>
         <section className="hero">
           <div className="hero-copy">
             <Reveal className="hero-title-wrap">
@@ -297,29 +402,15 @@ function App() {
               <p>
                 Raven scans comments, detects risky language, and highlights the posts that need human attention.
               </p>
-              <a className="gradient-btn hero-btn" href="#demo" onClick={focusDemo}>
+              <a className="gradient-btn hero-btn" href="/playground" onClick={openPlayground}>
                 <ScanLine size={18} />
-                Scan Sample Text
+                Open Playground
               </a>
-              <div className="hero-signals" aria-label="Raven system status">
-                <span>
-                  <strong>{apiHealth.state === "online" ? "Live" : "Demo"}</strong>
-                  API path
-                </span>
-                <span>
-                  <strong>Batch</strong>
-                  comment scan
-                </span>
-                <span>
-                  <strong>MV3</strong>
-                  extension
-                </span>
-              </div>
             </Reveal>
           </div>
           <Reveal delay={0.3}>
             <div className="hero-stage">
-              <img src="/assets/raven-hero-stage.svg" alt="Raven mobile app scanning comments" />
+              <img src="/assets/raven-hero-loop.gif" alt="Raven web and extension moderation preview" />
             </div>
           </Reveal>
         </section>
@@ -373,105 +464,152 @@ function App() {
             </div>
           </div>
         </section>
+          </>
+        )}
 
-        <section id="demo" className="light-section demo-section">
-          <div className="section-inner">
-            <Reveal>
-              <div className="section-head">
-                <span>Raven Lab</span>
-                <h2>Try the scanner.</h2>
-                <p>This demo calls `raven-api` first. If the service is offline, it falls back to the local browser demo scorer.</p>
-              </div>
-            </Reveal>
+        {route === "playground" && (
+          <section className="chat-page">
+            <aside className="chat-sidebar">
+              <button type="button" className="sidebar-new" onClick={newChat}>
+                <Plus size={17} strokeWidth={2.6} />
+                New chat
+              </button>
 
-            <Reveal>
-              <form className="quick-demo" onSubmit={runQuickScan}>
-                <div className="quick-demo-copy">
-                  <span>Live check</span>
-                  <strong>Type a comment and press Enter.</strong>
-                </div>
-                <div className="quick-input-row">
-                  <input
-                    id="quick-demo-input"
-                    ref={quickInputRef}
-                    value={quickText}
-                    onChange={(event) => setQuickText(event.target.value)}
-                    placeholder="Write a comment to scan"
-                    aria-label="Type a comment to scan"
-                  />
-                  <button type="submit" disabled={quickLoading}>
-                    <Send size={18} />
-                    {quickLoading ? "Scanning" : "Scan"}
-                  </button>
-                </div>
-                <div
-                  className={`quick-result ${quickResult?.needsReview ? "needs-review" : quickResult ? "is-safe" : ""}`}
-                  aria-live="polite"
-                >
-                  {quickResult ? (
-                    <>
-                      <strong>{quickResult.needsReview ? "Review" : "Safe"}</strong>
-                      <span>{Math.round(quickResult.score * 100)}% · {formatSourceName(quickResult.source)}</span>
-                    </>
-                  ) : (
-                    <span>Enter a comment to scan it.</span>
-                  )}
-                </div>
-              </form>
-            </Reveal>
-
-            <div className="demo-grid">
-              <Reveal>
-                <div className="demo-editor">
-                  <textarea
-                    value={demoText}
-                    onChange={(event) => setDemoText(event.target.value)}
-                    aria-label="Sample comments to scan"
-                  />
-                  <div className="demo-actions">
-                    <button type="button" onClick={() => setScanNonce((value) => value + 1)}>
-                      <RefreshCw size={14} />
-                      Scan now
-                    </button>
-                    <button type="button" onClick={() => setDemoText(demoSamples.join("\n"))}>
-                      Reset
-                    </button>
-                    <button type="button" onClick={checkApiHealth}>
-                      Check API
-                    </button>
-                    <a href="#engine">
-                      Model path <ExternalLink size={14} />
-                    </a>
-                  </div>
-                </div>
-              </Reveal>
-
-              <Reveal delay={0.15}>
-                <div className="result-panel">
-                  <div className="result-title">
-                    <span>
-                      <ShieldCheck size={20} />
-                      Raven Review Queue
+              <div className="sidebar-history">
+                <span className="sidebar-label">Recent chats</span>
+                {conversations.length === 0 && <p className="sidebar-empty">No chats yet</p>}
+                {conversations.map((chat) => (
+                  <button
+                    type="button"
+                    key={chat.id}
+                    className={`sidebar-item ${chat.id === activeId ? "is-active" : ""}`}
+                    onClick={() => setActiveId(chat.id)}
+                  >
+                    <MessageSquare size={15} />
+                    <span className="sidebar-item-title">{chat.title}</span>
+                    <span className="sidebar-item-del" onClick={(event) => deleteChat(event, chat.id)} aria-label="Delete chat">
+                      <Trash2 size={14} />
                     </span>
-                    <em className={demoSource === "browser-demo-fallback" ? "source-fallback" : ""}>
-                      {demoLoading ? "Scanning..." : formatSourceName(demoSource)}
-                    </em>
-                  </div>
-                  {demoResults.map((result, index) => (
-                    <div className={`result-item ${result.needsReview ? "needs-review" : ""}`} key={`${result.text}-${index}`}>
-                      <p>{result.text}</p>
-                      <span>
-                        {result.needsReview ? "Review" : "Safe"} · {Math.round(result.score * 100)}%
-                      </span>
-                    </div>
-                  ))}
-                  {!demoResults.length && <p className="empty-state">Add a comment to scan.</p>}
-                </div>
-              </Reveal>
-            </div>
-          </div>
-        </section>
+                  </button>
+                ))}
+              </div>
+            </aside>
 
+            <div className="chat-main">
+              <div className="chat-bg" aria-hidden="true">
+                <Grainient
+                  color1="#ffffff"
+                  color2="#43A5FF"
+                  color3="#ffffff"
+                  timeSpeed={0.25}
+                  colorBalance={0}
+                  warpStrength={1}
+                  warpFrequency={5}
+                  warpSpeed={2}
+                  warpAmplitude={50}
+                  blendAngle={0}
+                  blendSoftness={0.05}
+                  rotationAmount={500}
+                  noiseScale={2}
+                  grainAmount={0.1}
+                  grainScale={2}
+                  grainAnimated={false}
+                  contrast={1.5}
+                  gamma={1}
+                  saturation={1}
+                  centerX={0}
+                  centerY={0}
+                  zoom={0.9}
+                />
+              </div>
+
+              <div className="chat-scroll" ref={threadRef}>
+                {messages.length === 0 ? (
+                  <div className="chat-hero">
+                    <h1>What should Raven check?</h1>
+                    <p>Paste any comment or post and Raven tells you instantly if it&apos;s toxic, borderline, or safe.</p>
+                    <div className="chat-suggestions">
+                      {chatSamples.map((sample) => (
+                        <button type="button" key={sample} onClick={() => sendMessage(sample)}>
+                          <span>{sample}</span>
+                          <ArrowUp size={15} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="chat-messages">
+                    {messages.map((message) =>
+                      message.role === "user" ? (
+                        <div className="chat-row is-user" key={message.id}>
+                          <div className="chat-bubble">{message.text}</div>
+                        </div>
+                      ) : (
+                        <div className="chat-row is-raven" key={message.id}>
+                          <ChatVerdict result={message.result} />
+                        </div>
+                      )
+                    )}
+                    {pending && (
+                      <div className="chat-row is-raven">
+                        <div className="raven-loader">
+                          <span className="loader-dots">
+                            <i />
+                            <i />
+                            <i />
+                          </span>
+                          <span className="loader-shimmer">Raven is analyzing</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="chat-dock">
+                <form
+                  className="chat-composer"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    sendMessage();
+                  }}
+                >
+                  <div className="prompt-input">
+                    <textarea
+                      className="prompt-input-field"
+                      ref={composerRef}
+                      rows={1}
+                      value={input}
+                      onChange={(event) => {
+                        setInput(event.target.value);
+                        const el = event.target;
+                        el.style.height = "auto";
+                        el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+                      }}
+                      onKeyDown={onComposerKeyDown}
+                      placeholder="Paste a comment to check…"
+                      aria-label="Type a comment for Raven to check"
+                    />
+                    <div className="prompt-input-actions">
+                      <span className="prompt-input-hint">Raven · DistilBERT toxicity model</span>
+                      <button
+                        type="submit"
+                        className="prompt-send"
+                        disabled={pending || !input.trim()}
+                        aria-label="Send"
+                      >
+                        <ArrowUp size={18} strokeWidth={2.6} />
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {route === "home" && (
+          <>
         <section id="engine" className="light-section engine-section">
           <div className="section-inner">
             <Reveal>
@@ -505,41 +643,45 @@ function App() {
           <Reveal>
             <h2>Bring Raven to the browser.</h2>
             <p>The extension prototype scans visible comment nodes and highlights anything the model marks for review.</p>
-            <a className="gradient-btn" href="#demo" onClick={focusDemo}>
+            <a className="gradient-btn" href="/playground" onClick={openPlayground}>
               <CheckCircle2 size={18} />
-              Test the Flow
+              Open Playground
             </a>
           </Reveal>
         </section>
+          </>
+        )}
       </main>
 
-      <footer className="footer">
-        <div className="footer-inner">
-          <div className="footer-top">
-            <div>
-              <Logo />
-              <p>AI-assisted comment moderation for safer online spaces.</p>
+      {route === "home" && (
+        <footer className="footer">
+          <div className="footer-inner">
+            <div className="footer-top">
+              <div>
+                <Logo />
+                <p>AI-assisted comment moderation for safer online spaces.</p>
+              </div>
+              <div className="footer-links">
+                <div>
+                  <h4>Product</h4>
+                  <a href="#how-it-works">How it works</a>
+                  <a href="#features">Features</a>
+                  <a href="/playground" onClick={openPlayground}>Playground</a>
+                </div>
+                <div>
+                  <h4>Build</h4>
+                  <a href="#features">Plan</a>
+                  <a href="#extension">Extension</a>
+                </div>
+              </div>
             </div>
-            <div className="footer-links">
-              <div>
-                <h4>Product</h4>
-                <a href="#how-it-works">How it works</a>
-                <a href="#features">Features</a>
-                <a href="#demo">Demo</a>
-              </div>
-              <div>
-                <h4>Build</h4>
-                <a href="#features">Plan</a>
-                <a href="#extension">Extension</a>
-              </div>
+            <div className="footer-bottom">
+              <p>© {new Date().getFullYear()} Raven. All rights reserved.</p>
+              <p>Built for local model ownership.</p>
             </div>
           </div>
-          <div className="footer-bottom">
-            <p>© {new Date().getFullYear()} Raven. All rights reserved.</p>
-            <p>Built for local model ownership.</p>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }
