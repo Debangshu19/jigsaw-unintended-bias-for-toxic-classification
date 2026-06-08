@@ -8,3 +8,14 @@ __pycache__/
 .raven-screenshots/
 models/
 .expo/
+
+# research-only hate-speech corpora (do NOT commit raw data)
+raven-codemixed/data/
+
+# trained checkpoints & model weights (large; keep out of git)
+raven-codemixed/ckpt_*/
+ckpt_ravenx/
+*.pt
+*.safetensors
+*.bin
+*.onnx
