@@ -1,0 +1,50 @@
+<section class="slide" id="measure">
+  <div class="kicker">FOUNDATIONS · DATA &amp; METRICS</div>
+  <h2>Data and how we measure</h2>
+
+  <p>The English track uses the <b>Jigsaw "Unintended Bias in Toxicity Classification"</b> data (the Civil Comments corpus). It has <b>1,804,871</b> comments <span class="tag t-measured">measured by us</span>. Each comment carries a continuous <code>target</code> in [0,1]. We treat a comment as toxic when <code>target &ge; 0.5</code>, so the score is binarised at 0.5. The data also has identity columns (muslim, black, white, female, and others) that let us measure bias by group.</p>
+
+  <h3>Why balancing and the right metric matter</h3>
+  <p>The raw data is heavily imbalanced: <b>1,660,537</b> non-toxic against <b>144,334</b> toxic comments <span class="tag t-measured">measured by us</span>. That is about <b>11.5 : 1</b>, roughly 8% toxic. On data like this, plain accuracy is misleading. A model that labels everything "non-toxic" already scores about 92% accuracy while catching no toxic comment at all. So we cannot trust accuracy alone; we have to look at how the minority (toxic) class is handled.</p>
+
+  <h3>The metrics, one line each</h3>
+  <table class="data">
+    <thead><tr><th>Metric</th><th>Plain definition</th></tr></thead>
+    <tbody>
+      <tr><td>Accuracy</td><td>Fraction of all comments labelled correctly.</td></tr>
+      <tr><td>Precision (toxic)</td><td>Of the comments we flagged toxic, how many really were.</td></tr>
+      <tr><td>Recall (toxic)</td><td>Of the truly toxic comments, how many we caught.</td></tr>
+      <tr><td>F1 (toxic)</td><td>Harmonic mean of precision and recall &mdash; one number that balances both.</td></tr>
+      <tr><td>Macro-F1</td><td>F1 computed per class, then averaged &mdash; treats both classes equally regardless of size.</td></tr>
+      <tr><td>ROC-AUC</td><td>Probability the model ranks a random toxic comment above a random non-toxic one.</td></tr>
+      <tr><td>Jigsaw bias-aware AUC</td><td>A weighted blend of the overall AUC and per-identity-subgroup AUCs, so a model is rewarded only if it ranks well within each identity group, not just on average.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Two evaluation regimes &mdash; kept separate on purpose</h3>
+  <p>The numbers in this project come from two different setups. We keep them apart because mixing them would be a mistake.</p>
+  <div class="cols">
+    <div class="col">
+      <h4>Regime A &mdash; RNN / classical family</h4>
+      <ul>
+        <li>Trained and evaluated on the large, imbalanced split.</li>
+        <li>Reported with the <b>Jigsaw bias-aware AUC</b>.</li>
+        <li>Keras tokenizer, vocab <b>100,000</b>, <code>max_sequence_length 300</code>.</li>
+        <li>Pretrained 300-d word embeddings, shape <b>(276,289 &times; 300)</b>.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Regime B &mdash; DistilBERT</h4>
+      <ul>
+        <li>Trained on a <b>balanced down-sample: 50,000 per class = 100,000</b>.</li>
+        <li>Split <b>80/20 &rarr; 80,000 train / 20,000 val</b> (10k per class).</li>
+        <li>Reported with plain accuracy / F1 / ROC-AUC on that balanced val set.</li>
+        <li>WordPiece tokenizer, 30,522 vocab, <code>max_length 128</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note"><b>Honest caveat.</b> The RNN/classical numbers (Regime A) and the DistilBERT numbers (Regime B) were measured under different data splits, sequence lengths, and metrics &mdash; one uses bias-aware AUC on the large imbalanced set, the other uses plain ROC-AUC on a balanced 20k val set. So their headline numbers are <b>not directly comparable</b>. We do not put them side by side and pick a winner on raw accuracy. Instead we compare <b>behaviour</b>, especially recall on the toxic class.</p></div>
+
+  <div class="keypoint"><b>Takeaway.</b> For moderation, recall on the toxic (minority) class is the number that actually matters. A missed toxic comment (false negative) is the costly error &mdash; it reaches users. High accuracy on an 11.5:1 split can hide a model that misses most toxic comments, so we judge models by how much of the toxic class they catch.</div>
+</section>

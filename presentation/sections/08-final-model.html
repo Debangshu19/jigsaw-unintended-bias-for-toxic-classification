@@ -1,0 +1,72 @@
+<section class="slide" id="final">
+  <div class="kicker">THE FINAL ENGLISH MODEL · CAPABILITIES &amp; LIMITS</div>
+  <h2>The final model — what it does and where it stops</h2>
+
+  <p>This is the saved English model: a fine-tuned DistilBERT classifier, served end to end.
+  It is one model behind one API, used by three clients. Below is an honest split of what it
+  can do and what it cannot.</p>
+
+  <h3>What it can do</h3>
+  <div class="cards">
+    <div class="card">
+      <h4>Contextual transformer</h4>
+      <p>Six transformer blocks read the whole sentence at once, so the same word is read
+      differently depending on its context — unlike the fixed word vectors used by the RNNs.</p>
+    </div>
+    <div class="card">
+      <h4>Measured accuracy</h4>
+      <p>On the balanced 20k validation set: accuracy <b>0.8851</b>, F1 (toxic) <b>0.887</b>,
+      ROC-AUC <b>0.9515</b>. <span class="tag t-measured">measured by us</span></p>
+    </div>
+    <div class="card">
+      <h4>Catches most toxic comments</h4>
+      <p>Toxic recall <b>0.899</b> — it misses about one in ten toxic comments, far better than
+      the simple high-accuracy models that miss over half.
+      <span class="tag t-measured">measured by us</span></p>
+    </div>
+    <div class="card">
+      <h4>Served end to end</h4>
+      <p>A FastAPI service runs the model, with a fallback chain (real model &rarr; LLM via
+      gateway &rarr; keyword heuristic) so a live demo never hard-crashes.</p>
+    </div>
+    <div class="card">
+      <h4>One contract, three clients</h4>
+      <p>A React website, a Chrome extension (X / YouTube / Instagram), and an Expo mobile shell
+      all speak the same API contract.</p>
+    </div>
+    <div class="card">
+      <h4>Explanations + a tunable threshold</h4>
+      <p>Per-category scores and word-level explanations (occlusion), plus a decision threshold
+      a moderator can move to trade precision against recall.</p>
+    </div>
+  </div>
+
+  <h3>Where it stops</h3>
+  <ul>
+    <li><b>English-only and uncased.</b> The tokenizer lowercases input, so it loses signal from
+    SHOUTING in all caps. <span class="tag t-measured">measured by us</span></li>
+    <li><b>Short inputs only.</b> Hard cap of <b>128</b> tokens; longer comments are truncated.
+    <span class="tag t-measured">measured by us</span></li>
+    <li><b>Trained on a subset, not the full corpus.</b> A balanced down-sample of <b>100,000</b>
+    comments (50k per class), not all <b>1,804,871</b>. <span class="tag t-measured">measured by us</span></li>
+    <li><b>Binary head only.</b> It outputs toxic / non-toxic; it does not name the toxicity type
+    from this head.</li>
+    <li><b>Mild overfitting past one epoch.</b> Three epochs lowered training loss but raised
+    validation loss (<b>0.537 &rarr; 0.818</b>) with no accuracy gain, so ~1 epoch was near-optimal
+    for this subset. <span class="tag t-measured">measured by us</span></li>
+    <li><b>Identity bias not yet mitigated.</b> The dataset's identity columns make bias
+    measurable, but we have <b>not measured</b> or corrected it here.</li>
+    <li><b>It is a single model.</b> One model carries single-model variance and correlated errors
+    — exactly what the averaging step (Stage 4) is meant to cut.
+    <span class="tag t-proposed">proposed next step</span></li>
+  </ul>
+
+  <div class="keypoint"><b>Takeaway.</b> A solid, honest single classifier — 0.8851 accuracy,
+  0.887 F1, 0.9515 ROC-AUC, ~0.90 toxic recall — that works end to end across three clients. Its
+  main open weaknesses are English-only / uncased input, unmitigated identity bias, and being a
+  single model.</div>
+
+  <div class="note"><b>Honest caveat.</b> These numbers are for the English DistilBERT track only.
+  They are <i>not</i> a baseline for the Hindi RAVEN-X work, which is a different language, task,
+  and label scheme.</div>
+</section>

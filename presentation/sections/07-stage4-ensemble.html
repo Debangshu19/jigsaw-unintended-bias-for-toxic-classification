@@ -1,0 +1,100 @@
+<section class="slide" id="stage4">
+  <div class="kicker">STAGE 4 · ENSEMBLE BY SIMPLE AVERAGING</div>
+  <h2>Stage 4 — Ensemble learning by simple averaging</h2>
+
+  <p>This is the technique we are bringing in now. The idea is short: train several <b>different</b>
+  models, then average their predicted probabilities. This is called a <b>simple average</b> ensemble —
+  no weights to tune, no extra model on top, just the mean of each model's P(toxic).</p>
+
+  <div class="figure" id="fig-ensemble"><figcaption>Figure 5 — the modelling journey and the simple-average ensemble.</figcaption></div>
+
+  <h3>Why it works — the maths</h3>
+  <p>The result below is standard ensemble theory, not something we measured. We follow Krogh
+  &amp; Vedelsby (1995). <span class="tag t-lit">literature</span></p>
+
+  <div class="math">
+    Setup: K models, each with the SAME bias and error variance &sigma;&sup2;.<br>
+    The simple average is&nbsp; f&#772; = (1/K) &times; &Sigma; f<sub>i</sub>.<br>
+    <br>
+    Case 1 — independent errors:<br>
+    &nbsp;&nbsp;bias( f&#772; ) = bias( f<sub>i</sub> )&nbsp;&nbsp;(unchanged)<br>
+    &nbsp;&nbsp;Var( f&#772; ) = &sigma;&sup2; / K&nbsp;&nbsp;&rarr; variance shrinks, bias does not grow.<br>
+    <br>
+    Case 2 — errors with pairwise correlation &rho;:<br>
+    &nbsp;&nbsp;Var( f&#772; ) = &rho;&sigma;&sup2; + (1 &minus; &rho;)&sigma;&sup2; / K<br>
+    &nbsp;&nbsp;As K &rarr; &infin;, &nbsp; Var( f&#772; ) &rarr; &rho;&sigma;&sup2;.<br>
+    <br>
+    &rArr; the floor is set by &rho;. Adding more copies of one model (high &rho;) buys little;
+    the gain comes from LOW correlation, i.e. DIVERSITY.<br>
+    <br>
+    Ambiguity decomposition (Krogh &amp; Vedelsby):<br>
+    &nbsp;&nbsp;ensemble error = (mean individual error) &minus; (mean ambiguity / diversity)<br>
+    &nbsp;&nbsp;ambiguity &ge; 0 &rArr; ensemble error &le; mean individual error.<br>
+    &nbsp;&nbsp;(For a convex loss this also follows from Jensen&apos;s inequality:
+    loss(mean of predictions) &le; mean of loss(predictions).)
+  </div>
+
+  <div class="keypoint"><b>Takeaway.</b> Averaging cuts variance without adding bias, and the benefit
+  scales with how <i>uncorrelated</i> the models' errors are. So you average <b>diverse
+  architectures</b> — a transformer, a larger transformer, and an RNN — not several copies of the
+  same model.</div>
+
+  <h3>Evidence — what the Jigsaw competition actually did</h3>
+  <p>The same Jigsaw "Unintended Bias" task we used for the English track was a Kaggle competition,
+  so we can look at what the top teams did. <span class="tag t-lit">literature</span></p>
+  <ul>
+    <li>Qishen Ha's <b>8th-place</b> solution was titled "8th Place Solution (4 models simple avg)" —
+    literally <b>four diverse models combined by simple averaging</b> of predicted probabilities.
+    (We have the public title and competition write-ups; we do not have the four exact architectures,
+    so we say "four diverse models" and do not name them.)</li>
+    <li>The competition consensus was that a fine-tuned <b>BERT was the best single model</b>, but
+    <b>every top team ensembled diverse models</b> — BERT-base, BERT-large, GPT-2, and LSTM-based
+    models — by averaging or weighted-averaging (e.g. the 2nd-place "power 3.5 weighted sum").
+    No top team relied on a single model.</li>
+    <li>To handle the bias metric and the imbalance, teams also used <b>sample weighting</b> (up-weight
+    toxic + identity examples; target weight &times; log(annotator_count + 2)) and <b>negative
+    down-sampling</b> (drop 50% of negatives after epoch 1).</li>
+  </ul>
+
+  <h3>Multi-sample dropout — a mini-ensemble inside one model</h3>
+  <p>Inoue (2019, arXiv:1905.09788) gives a cheaper, related trick that lives <i>inside</i> a single
+  model. <span class="tag t-lit">literature</span></p>
+  <ul>
+    <li>Within ONE training iteration, draw <b>k different dropout masks</b> and push the input through
+    each. The duplicated layers <b>share weights</b>, so there are no extra parameters.</li>
+    <li>Average the per-sample losses across the k masks and back-propagate that.</li>
+    <li>Effect: faster convergence and better generalisation at almost no extra cost — an
+    <b>intra-model mini-ensemble</b>. (We describe the mechanism only; we do not quote the paper's
+    exact error-reduction numbers, which we have not verified.)</li>
+  </ul>
+
+  <h3>Our concrete plan</h3>
+  <p>We already have two of the three ingredients: the <b>RNN family</b> (Stage 1) and the
+  <b>fine-tuned DistilBERT</b> (Stage 3). The plan is to add a <b>larger transformer</b> (Stage 2's
+  proposed step) and then average the three models' P(toxic). <span class="tag t-proposed">proposed next step</span></p>
+
+  <p>These are our real single-model starting points, kept in their own regimes (they are not
+  directly comparable):</p>
+  <table class="data">
+    <thead>
+      <tr><th>Model (already have)</th><th>Regime</th><th>Best single-model score</th><th>Tag</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>BiGRU-Conv1D + Attention (best RNN)</td><td>A — RNN-family, bias-aware AUC</td><td>Bias-AUC 0.9190</td><td><span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>DistilBERT fine-tuned (3-epoch saved model)</td><td>B — balanced 20k val</td><td>Acc 0.8851 · F1 0.887 · ROC-AUC 0.9515</td><td><span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>Larger transformer (e.g. BERT-base / BERT-large)</td><td>—</td><td>not measured</td><td><span class="tag t-proposed">proposed next step</span></td></tr>
+    </tbody>
+  </table>
+
+  <p>What we expect from the maths above plus the proven Kaggle result: averaging three diverse,
+  low-correlation models should lower variance and reduce error below the best single model, with the
+  same bias. That is the prediction <span class="tag t-proposed">proposed next step</span> — the theory
+  and the literature point to a gain, and our single-model numbers are the honest baseline we would
+  measure against.</p>
+
+  <div class="note"><b>Honest caveat.</b> We are <b>not</b> reporting a measured ensemble score. No
+  ensemble has been run yet, so there is no number to give — that is the next experiment. We also have
+  <b>no public per-model score from Qishen Ha's solution</b> to cite. Everything in this section is
+  either standard theory or published competition practice, clearly labelled; the only measured numbers
+  here are our existing single-model results.</div>
+</section>

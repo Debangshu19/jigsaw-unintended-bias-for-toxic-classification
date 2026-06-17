@@ -1,0 +1,95 @@
+<section class="slide" id="stage1">
+  <div class="kicker">STAGE 1 · CLASSICAL &amp; RNN BASELINES</div>
+  <h2>Stage 1 — Classical and RNN models (the LSTM family)</h2>
+
+  <p>This was the first modelling stage on the English Jigsaw task. The aim was to set a baseline
+  before trying anything heavier. We built a bag-of-words classifier and then a family of recurrent
+  networks, all on the same data.</p>
+
+  <div class="note"><b>Honest caveat.</b> These classical and RNN baselines were primarily a
+  teammate's contribution (Debangshu Dey). We use them here as a comparison family.
+  The DistilBERT transformer and the product stack are the author's (Niladri Hazra) track. We do not
+  claim the author trained the LSTMs.</div>
+
+  <h3>(a) What we built</h3>
+  <p>All RNN models used the same input setup: a Keras tokenizer with a vocabulary of 100,000,
+  sequences padded or cut to a maximum length of 300, and pretrained word embeddings of shape
+  276,289 &times; 300. These embeddings are <b>context-free</b>: each word has one fixed 300-d vector,
+  the same vector no matter where the word appears.</p>
+  <ul>
+    <li>TF-IDF + Logistic Regression — a bag-of-words classifier (SGD, log-loss, alpha = 1e-5).</li>
+    <li>Single LSTM (128 units, 10 epochs).</li>
+    <li>BiLSTM — two BiLSTM layers of 128 units, global max pooling, dense head.</li>
+    <li>Weighted BiLSTM — the same with class weights to fight imbalance.</li>
+    <li>BiGRU + Attention (64 units, attention).</li>
+    <li>BiGRU-Conv1D + Attention (64 units, attention, plus a Conv1D layer).</li>
+  </ul>
+
+  <h3>(b) Real results</h3>
+  <p>These are measured numbers <span class="tag t-measured">measured by us</span>. "Bias-AUC" is
+  the Jigsaw bias-aware AUC (a weighted blend of overall AUC and per-identity-subgroup AUCs).
+  "Val acc" is the best validation accuracy.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Model</th><th>Architecture detail</th><th>Val acc</th><th>Bias-AUC</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TF-IDF + Logistic Regression</td><td>bag-of-words (SGD, log-loss, alpha 1e-5)</td><td>0.87</td><td>0.9061</td></tr>
+      <tr><td>Single LSTM</td><td>LSTM 128u, 10 epochs, pretrained 300-d emb</td><td>0.9469</td><td>0.8927</td></tr>
+      <tr><td>BiLSTM</td><td>2&times; BiLSTM 128u + GlobalMaxPool + Dense</td><td>0.8114</td><td>0.8992</td></tr>
+      <tr><td>Weighted BiLSTM</td><td>same + class weights</td><td>0.8561</td><td>0.9056</td></tr>
+      <tr><td>BiGRU + Attention</td><td>BiGRU 64u + attention</td><td>0.9517</td><td>0.9181</td></tr>
+      <tr><td>BiGRU-Conv1D + Attention</td><td>BiGRU 64u + attention + Conv1D</td><td>0.9514</td><td>0.9190</td></tr>
+    </tbody>
+  </table>
+
+  <div class="figure" id="fig-stage1-rnn"><figcaption>Figure 2 — Bias-aware AUC across the six classical and RNN baselines (measured by us).</figcaption></div>
+
+  <h3>(c) The mathematical reason the RNN approach is limited</h3>
+  <p>The limits below are general theory <span class="tag t-lit">literature</span>, not specific to
+  our run.</p>
+
+  <div class="math">
+    h_t = f(h_{t-1}, x_t)<br>
+    path length between token i and token j  =  O(|i &minus; j|) steps<br>
+    &rarr; a signal from token i to token j passes through |i &minus; j| multiplications<br>
+    &rarr; repeated products shrink or grow  &rarr;  vanishing / exploding gradients
+  </div>
+
+  <ul>
+    <li><b>Sequential recurrence.</b> The hidden state is computed step by step. The path between two
+    tokens grows with their distance, so a long-range dependency must survive many matrix
+    multiplications. LSTM gating (Hochreiter &amp; Schmidhuber, 1997) softens this but does not remove
+    it. <span class="tag t-lit">literature</span></li>
+    <li><b>No parallelism over the sequence.</b> Because step t needs step t&minus;1, the network must
+    unroll one token at a time, so training and inference are slow. <span class="tag t-lit">literature</span></li>
+    <li><b>Context-free embeddings.</b> One fixed vector per word. "kill" in "you killed it!" (praise)
+    and "kill" in a threat start from the same vector, so the RNN must separate them from a weak
+    signal. <span class="tag t-lit">literature</span></li>
+    <li><b>Information bottleneck.</b> The whole left context is squeezed into a single fixed-size
+    hidden vector. <span class="tag t-lit">literature</span></li>
+  </ul>
+
+  <h3>(d) The drawback we actually saw</h3>
+  <p>These are our measured numbers <span class="tag t-measured">measured by us</span>.</p>
+  <ul>
+    <li><b>High accuracy hides low toxic recall.</b> On the imbalanced set, TF-IDF+LogReg has a toxic
+    recall of about 0.448 and the Single LSTM about 0.452. They miss more than half of toxic comments
+    while still reading as roughly "94% accurate" on imbalanced data. BiLSTM reaches a toxic recall of
+    about 0.914, but at a much lower validation accuracy (0.8114).</li>
+    <li><b>Diminishing returns from architecture tweaks.</b> Making the model bidirectional, then
+    weighted, then attention-augmented only moves the Bias-AUC from about 0.89 up to about 0.92. The
+    extra machinery does not break past this band.</li>
+  </ul>
+
+  <div class="keypoint"><b>Takeaway.</b> The ceiling here is the representation, not the wiring.
+  Context-free word vectors plus a sequential, fixed-size bottleneck cap what these models can learn,
+  and stacking more recurrent layers on top of the same embeddings gives little back. This is what
+  motivates a contextual, attention-based, pretrained transformer.</div>
+
+  <h3>(e) What it motivates</h3>
+  <p>The next stage replaces context-free vectors with context-dependent ones and replaces the
+  sequential bottleneck with attention, so every token can reach every other token in one step. That
+  is Stage 2: fine-tuning a pretrained transformer (DistilBERT).</p>
+</section>

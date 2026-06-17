@@ -1,0 +1,112 @@
+<section class="slide" id="stage2">
+  <div class="kicker">STAGE 2 · DISTILBERT TRANSFORMER</div>
+  <h2>Stage 2 — DistilBERT: a fine-tuned transformer</h2>
+
+  <p>The RNN models in Stage 1 read a sentence one word at a time and kept a single
+  fixed vector per word. That gave two problems: long-range context decays as it passes
+  through the chain, and a word like "killed" gets the same vector whether it is a threat
+  or a sports headline. A transformer fixes both. We did not train one from scratch — we
+  took an existing pretrained model and fine-tuned it.</p>
+
+  <h3>Why attention beats recurrence</h3>
+  <p>The transformer (Vaswani et al., 2017 <span class="tag t-lit">literature</span>)
+  replaces recurrence with self-attention. Three properties matter here:</p>
+  <ul>
+    <li><b>Short path length.</b> Self-attention connects every pair of tokens directly,
+    so the path between any two words is <b>O(1)</b>, against <b>O(n)</b> for an RNN that
+    must pass information step by step. Long-range context is reached in one hop.
+    <span class="tag t-lit">literature</span></li>
+    <li><b>Contextual, bidirectional embeddings.</b> Each token's vector is computed from
+    the whole sentence, so the same word gets a different representation in a different
+    context. This is what removes the fixed-vector limit behind the "killed it" problem.
+    <span class="tag t-lit">literature</span></li>
+    <li><b>Parallel and pretrained.</b> All positions are processed in parallel (no
+    sequential dependency), and the backbone is pretrained on a large corpus. Fine-tuning
+    then needs only a little task data — this is transfer learning.
+    <span class="tag t-lit">literature</span></li>
+  </ul>
+
+  <div class="math">
+    RNN inter-token path = O(n) &rarr; signal decays over distance<br>
+    self-attention inter-token path = O(1) &rarr; direct long-range link
+  </div>
+
+  <h3>What we actually did</h3>
+  <p>We did <b>not</b> distill anything ourselves. We took the already-distilled
+  <code>distilbert-base-uncased</code> and fine-tuned it. DistilBERT (Sanh et al., 2019
+  <span class="tag t-lit">literature</span>) is the result of distilling BERT-base into a
+  smaller student: about <b>66M parameters</b>, <b>6 transformer layers</b>, roughly
+  <b>40% smaller</b> and <b>60% faster</b> than BERT while keeping about <b>97%</b> of its
+  performance <span class="tag t-lit">literature</span>. We fine-tuned it on a balanced
+  100k subset of Jigsaw (50k toxic + 50k non-toxic, split 80k train / 20k val)
+  <span class="tag t-measured">measured by us</span>.</p>
+
+  <p>The architecture, layer by layer: WordPiece tokenizer (vocab <b>30,522</b>,
+  max length <b>128</b>) &rarr; embeddings &rarr; <b>6 transformer blocks</b> (each with
+  <b>12 attention heads</b> and a feed-forward block 768&rarr;3072&rarr;768) &rarr; the
+  first-token <b>[CLS]</b> hidden state (768-d) &rarr; pre_classifier Linear(768&rarr;768)
+  with ReLU and dropout &rarr; classifier Linear(768&rarr;2) &rarr; softmax giving
+  P(toxic). Training used the HuggingFace Trainer with AdamW, learning rate about 5e-5,
+  batch size 16, on a single GPU.</p>
+
+  <div class="figure" id="fig-distilbert"><figcaption>Figure 3 — DistilBERT-for-sequence-classification, layer by layer (with parameter counts).</figcaption></div>
+
+  <h3>Our real results</h3>
+  <p>All numbers below are on the balanced 20k validation set (10k per class)
+  <span class="tag t-measured">measured by us</span>. We report two runs: 1 epoch
+  (2,500 steps) and the saved 3-epoch model (7,500 steps).</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Metric (balanced 20k val)</th><th>1 epoch</th><th>3 epochs (saved final)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Accuracy</td><td>0.8895</td><td>0.8851</td></tr>
+      <tr><td>Precision (toxic)</td><td>0.873</td><td>0.875</td></tr>
+      <tr><td>Recall (toxic)</td><td>0.912</td><td>0.899</td></tr>
+      <tr><td>F1 (toxic)</td><td>0.892</td><td>0.887</td></tr>
+      <tr><td>Validation loss</td><td>0.537</td><td>0.818</td></tr>
+      <tr><td>Training loss</td><td>0.6075</td><td>0.4207</td></tr>
+      <tr><td>ROC-AUC</td><td>not reported</td><td>0.9515</td></tr>
+      <tr><td>PR-AUC (avg precision)</td><td>not reported</td><td>0.9495</td></tr>
+    </tbody>
+  </table>
+
+  <p>Confusion matrix for the 3-epoch model (rows = actual, columns = predicted; 10k per
+  class) <span class="tag t-measured">measured by us</span>:</p>
+
+  <table class="data">
+    <thead>
+      <tr><th></th><th>Pred non-toxic</th><th>Pred toxic</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><b>Actual non-toxic</b></td><td>TN 8712</td><td>FP 1288</td></tr>
+      <tr><td><b>Actual toxic</b></td><td>FN 1011</td><td>TP 8989</td></tr>
+    </tbody>
+  </table>
+
+  <div class="keypoint"><b>Takeaway.</b> The win over the RNN family is in behaviour, not
+  raw accuracy. DistilBERT reaches about <b>0.90 toxic recall</b> on the balanced 20k val set
+  <span class="tag t-measured">measured by us</span>, while the simple high-accuracy
+  baseline TF-IDF + Logistic Regression had toxic recall below <b>0.45</b> on the large
+  imbalanced split <span class="tag t-measured">measured by us</span> — it missed more than
+  half of all toxic comments. Both DistilBERT runs (1 epoch and 3 epochs) are Regime B
+  (balanced 20k val); the TF-IDF + Logistic Regression recall above is Regime A (the large
+  imbalanced split). Recall on a balanced set and recall on a heavily imbalanced set are
+  different regimes, so this is not a like-for-like number — treat the DistilBERT-vs-RNN-family
+  comparison as a qualitative illustration of the imbalance-failure point, not a direct
+  metric.</div>
+
+  <h3>The drawback that remains</h3>
+  <div class="note"><b>Honest caveat.</b> Four limits stay with this model.
+  <b>(1) It is a compressed model</b> — 66M params, 6 layers — so it has a capacity ceiling.
+  <b>(2) Mild overfitting at 3 epochs</b>: training to 3 epochs lowered training loss
+  (0.6075 &rarr; 0.4207) but raised validation loss (<b>0.537 &rarr; 0.818</b>) with no
+  accuracy gain, so about 1 epoch was near-optimal for this 100k subset.
+  <b>(3) It is a single model</b> — its errors have an irreducible variance that one model
+  cannot average away. <b>(4) Scope limits</b>: English, uncased, a 128-token cap, and
+  trained only on the balanced subset.</div>
+
+  <p>This points to two ways forward. Raise the capacity ceiling by scaling the model up
+  (Stage 3), and reduce single-model variance by combining several models (Stage 4).</p>
+</section>

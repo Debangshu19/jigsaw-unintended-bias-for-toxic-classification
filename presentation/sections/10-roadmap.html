@@ -1,0 +1,90 @@
+<section class="slide" id="roadmap">
+  <div class="kicker">WHAT WE NEED NEXT · CONCRETE STEPS</div>
+  <h2>What we need next</h2>
+
+  <p>Here is the honest state of the work and the small set of things left to finish.
+  None of the numbers below are claimed as results yet. Each item is a planned step, with
+  the real single-model numbers we already have as the starting point.</p>
+
+  <div class="cols">
+    <div class="col">
+      <h3>English track</h3>
+      <ul>
+        <li><b>Train and average the ensemble.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Actually train three diverse models — our fine-tuned DistilBERT, a larger transformer
+          (e.g. BERT-base), and an RNN-family model — and combine them by simple averaging of
+          predicted probabilities. Then <i>measure</i> the gain. Our starting point is the real
+          DistilBERT 3-epoch number: accuracy <b>0.8851</b>, F1 (toxic) <b>0.887</b>, ROC-AUC
+          <b>0.9515</b>. The expected benefit comes from low error correlation across diverse
+          architectures, following the Qishen Ha 8th-place "4 models simple avg" result and the
+          standard variance-reduction theory; we will report only the measured ensemble score, not
+          a guessed one.</li>
+        <li><b>Add multi-sample dropout.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Within one training step, draw <i>k</i> dropout masks and average the per-sample losses
+          (Inoue, 2019). It is an intra-model mini-ensemble at almost no extra cost. We will measure
+          whether it improves convergence and validation loss on our split.</li>
+        <li><b>Add bias-aware sample weighting.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Up-weight toxic and identity examples (target weight scaled by log of annotator count),
+          as the top Jigsaw teams did, and report the Jigsaw bias-aware AUC alongside accuracy.</li>
+        <li><b>Report on one common split.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Right now the RNN family (large imbalanced split, bias-aware AUC) and DistilBERT
+          (balanced 20k val) are not directly comparable. We will re-evaluate the models on one
+          shared split so the numbers can sit in one table.</li>
+      </ul>
+    </div>
+
+    <div class="col">
+      <h3>RAVEN-X track</h3>
+      <ul>
+        <li><b>Full multi-seed run.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          The current MuRIL number (val macro-F1 <b>0.842</b>, epoch 2) is a single fast seed-42
+          run with the val loop capped at 400 examples. We will run 3–5 seeds and report
+          mean &plusmn; std on the full val set.</li>
+        <li><b>Script-stratified faithfulness on Devanagari.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          This is the headline that is <i>not yet measured</i>. We will measure comprehensiveness
+          and sufficiency of the rationales on the native Devanagari posts (82.5% of script
+          characters are Devanagari), since the rationale head is supervised only on English.
+          That tests whether explanation transfers across scripts with zero shared subwords.</li>
+        <li><b>Clean held-out test number.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Report MuRIL on the frozen test split (701 rows). The TF-IDF baseline is macro-F1
+          <b>0.813</b> test; the MuRIL test number is still pending.</li>
+        <li><b>Geometry probe.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Check, in MuRIL's shared embedding space, whether a Devanagari slur sits near its English
+          equivalent — evidence for why cross-script transfer can work at all.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Resources we need</h3>
+  <ul>
+    <li><b>A small amount of GPU time.</b>
+      <span class="tag t-proposed">proposed next step</span>
+      A free T4 is enough for the RAVEN-X multi-seed and faithfulness runs (the first run was on a
+      Colab T4). The English ensemble plus the larger transformer (BERT-base) needs a bit more
+      compute than a single T4.</li>
+    <li><b>Continued access to the gated Hindi datasets.</b>
+      <span class="tag t-proposed">proposed next step</span>
+      We need ongoing access to HASOC-2019 Hindi (4,665 rows) and HateXplain so we can finish the
+      multi-seed and cross-script evaluation.</li>
+  </ul>
+
+  <div class="keypoint"><b>Takeaway.</b> The remaining work is finishing and measuring, not
+  redesigning. For English: train and average the ensemble and report a gain over our real
+  DistilBERT numbers. For RAVEN-X: multi-seed runs, the Devanagari faithfulness headline, a clean
+  test number, and the geometry probe. The cost is modest — mostly a little GPU time and continued
+  dataset access.</div>
+
+  <div class="note"><b>Honest caveat.</b> Every figure above that is tagged as a next step is not a
+  result. The only measured numbers here are our existing single-model scores (DistilBERT 0.8851
+  accuracy; MuRIL 0.842 val macro-F1; TF-IDF 0.813 test macro-F1). The ensemble gain, the
+  multi-seed mean &plusmn; std, and the Devanagari faithfulness transfer are all still to be
+  measured.</div>
+</section>

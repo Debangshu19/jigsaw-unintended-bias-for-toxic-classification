@@ -1,0 +1,112 @@
+<section class="slide" id="ravenx">
+  <div class="kicker">OUR ORIGINAL METHOD · LOW-RESOURCE HINDI</div>
+  <h2>RAVEN-X — our original contribution (Hindi, cross-script rationale transfer)</h2>
+
+  <h3>Why we re-scoped the project</h3>
+  <p>
+    Our supervisor, Dr. Arpita Dutta, is second author of the survey "A Survey on Automatic Online
+    Hate Speech Detection in Low-Resource Languages" (arXiv:2411.19017). That survey points to
+    low-resource and code-mixed Hindi-English as the open gap. Building another English Jigsaw
+    model is a reproduction, not a contribution. So she asked us to propose our own method in
+    low-resource Hindi instead. RAVEN-X is that method.
+  </p>
+
+  <h3>Data truth — what we actually measured on disk</h3>
+  <p>
+    We checked the HASOC-2019 Hindi file ourselves (4,665 rows). It is native-script Hindi, not
+    romanized Hinglish:
+    <span class="tag t-measured">measured by us</span>
+    <b>82.5%</b> of script characters are Devanagari; 74.9% of posts
+    are Devanagari-dominant and only 7.3% are Latin-dominant. This matters for the method: a
+    Devanagari slur and its English equivalent share <b>zero</b> subword tokens. So any transfer
+    from English to Hindi cannot ride on shared spelling. It has to pass through MuRIL's shared
+    meaning space, purely as representation.
+  </p>
+  <p>
+    The official gold test set is blind, so we cannot use it. We froze a stratified split with
+    seed=42 and report on it: <span class="tag t-measured">train 3,265 / val 699 / test 701</span>.
+  </p>
+
+  <h3>The method</h3>
+  <p>
+    One shared <b>MuRIL-base</b> encoder (12 layers, 768-d, ~236M params) feeds two heads:
+  </p>
+  <div class="cards">
+    <div class="card">
+      <h4>CLASSIFY head</h4>
+      <p>Toxic / not toxic. Supervised on Hindi HASOC and English data together.</p>
+    </div>
+    <div class="card">
+      <h4>RATIONALE head</h4>
+      <p>Which words are toxic. 768&rarr;256&rarr;1 per word. Supervised <b>only</b> on English
+      HateXplain — never on Hindi.</p>
+    </div>
+  </div>
+  <p>
+    The two heads are tied together by a <b>per-head-masked multi-task loss</b>: each loss term
+    applies only where its label exists, so we never train on a missing label. On top of that we
+    add a <b>label-free faithfulness self-objective</b> on Hindi — comprehensiveness and
+    sufficiency, measured by masking words at the attention level and re-running the full encoder.
+    Each batch of 16 is mixed: 8 HASOC-Hindi + 8 HateXplain-English. AdamW, discriminative learning
+    rates (2e-5 encoder / 1e-4 heads), max_len 128, fp16, on a T4 GPU.
+  </p>
+
+  <div class="figure" id="fig-ravenx"><figcaption>Figure 6 — RAVEN-X: one MuRIL encoder, two heads, a masked multi-task loss.</figcaption></div>
+
+  <h3>Results from the first run</h3>
+  <p>
+    Colab T4, fast mode, 3 epochs, single seed (42). All numbers below are
+    <span class="tag t-measured">measured by us</span> on the frozen split.
+  </p>
+  <table class="data">
+    <thead>
+      <tr><th>Model</th><th>Macro-F1 (val)</th><th>Macro-F1 (test)</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TF-IDF (word+char) + LogReg baseline</td><td>0.787</td><td>0.813</td><td>classical baseline</td></tr>
+      <tr><td>MuRIL (RAVEN-X), epoch 2, faithfulness off</td><td><b>0.842</b></td><td>pending</td><td>+5.5 pts over baseline on the same val split</td></tr>
+    </tbody>
+  </table>
+  <table class="data">
+    <thead>
+      <tr><th>Other measured signals</th><th>Start</th><th>End</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>English rationale token-F1 (HateXplain)</td><td>0.653</td><td>0.679</td></tr>
+      <tr><td>Faithfulness trade-off (epoch 3): macro-F1 cost</td><td>0.842</td><td>0.802</td></tr>
+      <tr><td>Faithfulness trade-off (epoch 3): token-F1 gain</td><td>0.653</td><td>0.679</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Turning the Hindi faithfulness objective on (epoch 3) traded classification macro-F1
+    (0.842 &rarr; 0.802) for a gain in rationale token-F1 (0.653 &rarr; 0.679). That is the
+    accuracy-versus-explainability tension the method pre-registered, and we measured it rather
+    than assumed it.
+  </p>
+
+  <h3>Why this is novel — and the honest negative-result framing</h3>
+  <p>
+    The novelty is the conjunction of three things at once: cross-script (English &rarr; Devanagari
+    Hindi), at the rationale level (word-by-word, not just a label), with zero target-language
+    rationale labels. We test whether explanation faithfulness survives the script boundary with a
+    label-free deletion test we built, not an assumption. If the answer turns out to be no — that
+    transfer does not survive crossing into Devanagari — that is still a rigorous negative result
+    the field does not currently have, and reporting it honestly is itself a contribution.
+  </p>
+
+  <div class="keypoint">
+    <b>Takeaway.</b> RAVEN-X is one MuRIL encoder with two heads and a masked multi-task loss. On
+    our frozen split it reached macro-F1 0.842 on validation, +5.5 points over the TF-IDF baseline
+    (0.787), and we directly measured the accuracy-versus-explainability trade-off the design
+    predicted.
+  </div>
+
+  <div class="note">
+    <b>Honest caveat.</b> This is a fast single-seed run; MuRIL validation was capped at 400
+    examples by the eval loop and the clean MuRIL test number is still pending. The headline result —
+    whether faithful explanations transfer across script into Devanagari — is the pending Week-4
+    measurement, not yet done. And the English DistilBERT 0.885 is <b>not</b> a baseline here: it is
+    a different language, task, label scheme, and class balance, so comparing the two would be a
+    category error. It served only as motivation.
+  </div>
+</section>

@@ -1,0 +1,97 @@
+<section class="slide" id="stage3">
+  <div class="kicker">STAGE 3 · A BIGGER TRANSFORMER</div>
+  <h2>Stage 3 — Scaling up to a larger transformer</h2>
+
+  <p>
+    The next idea was to ask: what if we made the model bigger? In an early discussion this was
+    phrased as moving to a "DistilBERT large". We want to be honest about two things up front.
+  </p>
+
+  <div class="note">
+    <b>Honest caveat.</b> We did <b>not</b> run any larger-model experiment. There is no measured
+    number on this slide. Everything here is reasoning plus what other people have reported.
+    Treat every claim as <span class="tag t-lit">literature</span> or
+    <span class="tag t-proposed">proposed next step</span>, never as something we measured.
+  </div>
+
+  <h3>First, the naming</h3>
+  <p>
+    There is no official "DistilBERT-large". DistilBERT only ships as a base model (~66M params,
+    6 layers). DistilBERT is itself a <i>compressed</i> version of BERT-base. So the real way to
+    add capacity is to <b>undo the compression</b> and use a full-size encoder instead:
+  </p>
+  <table class="data">
+    <thead>
+      <tr><th>Encoder</th><th>Params</th><th>Layers</th><th>Heads</th><th>Hidden dim</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>DistilBERT-base (what we used)</td><td>~66.96M</td><td>6</td><td>12</td><td>768</td><td><span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>BERT-base</td><td>110M</td><td>12</td><td>12</td><td>768</td><td><span class="tag t-proposed">proposed next step</span></td></tr>
+      <tr><td>BERT-large</td><td>~340M</td><td>24</td><td>16</td><td>1024</td><td><span class="tag t-proposed">proposed next step</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Why a bigger model should help — bias-variance reasoning</h3>
+  <p>
+    A model's expected error can be split into three parts. This is standard theory, not a
+    measurement.
+  </p>
+  <div class="math">
+    Expected error = bias&sup2; + variance + irreducible noise
+    <br><br>
+    bias&sup2;&nbsp;&rarr;&nbsp;how far the model class is from the true function (too simple = high bias)
+    <br>
+    variance&nbsp;&rarr;&nbsp;how much the fit changes with a different training sample
+    <br>
+    noise&nbsp;&rarr;&nbsp;label / data randomness we cannot remove
+  </div>
+  <p>
+    A larger encoder has more capacity, so it can fit the true function more closely. That lowers
+    <b>bias</b>. This is the reason fine-tuned transformers were the best <i>single</i> models in
+    the Jigsaw competition <span class="tag t-lit">literature</span>.
+  </p>
+
+  <div class="cols">
+    <div class="col">
+      <h4>What we gain</h4>
+      <ul>
+        <li>Lower bias — more capacity to fit the true function.</li>
+        <li>Best single-model behaviour, matching the Jigsaw result <span class="tag t-lit">literature</span>.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>What we pay</h4>
+      <ul>
+        <li>Higher variance / overfitting risk on a small balanced set (ours was 100,000 rows).</li>
+        <li>Much more compute and memory (BERT-large is ~340M vs ~66.96M).</li>
+        <li>Diminishing returns — each size step buys less.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="figure" id="fig-bias-variance">
+    <figcaption>Figure 4 — Bias&ndash;variance trade-off: a bigger encoder lowers bias but raises variance (illustrative).</figcaption>
+  </div>
+
+  <p>
+    We have a real reason to worry about the variance side. Our 3-epoch DistilBERT run already
+    showed mild overfitting: training loss fell (0.6075 &rarr; 0.4207) while validation loss rose
+    (0.537 &rarr; 0.818) with no accuracy gain <span class="tag t-measured">measured by us</span>.
+    A larger model on the same small set would likely overfit sooner, not later.
+  </p>
+
+  <div class="note">
+    <b>Honest punchline.</b> A single bigger model raises the ceiling, but it does <b>not</b>
+    remove single-model variance or correlated errors — one model still makes the same kind of
+    mistakes every time. In the Jigsaw competition no top team relied on one model; the best
+    teams averaged several diverse models <span class="tag t-lit">literature</span>. That is what
+    Stage 4 looks at.
+  </div>
+
+  <div class="keypoint">
+    <b>Takeaway.</b> Going bigger (BERT-base 110M or BERT-large ~340M) is the honest way to add
+    capacity, and it would lower bias — but it costs far more compute and does not fix the
+    variance problem. So the more useful next step is not "one bigger model", it is "several
+    diverse models averaged together".
+  </div>
+</section>

@@ -1,0 +1,1540 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Raven — Toxic & Hate-Speech Detection</title><style>
+:root{
+  --bg:#ffffff; --panel:#f6f8fc; --panel2:#eef2f8; --stroke:#dde3ec;
+  --ink:#1f242c; --inkstrong:#0b0e14; --muted:#5a6473;
+  --blue:#2f5fe0; --green:#0e9266; --amber:#a96a09; --violet:#6a3fc0;
+  --thbg:#1f3a66; --think:#ffffff; --rowalt:#f4f6fb; --softline:#e7ebf2;
+  --codeink:#2a2f3a; --foot:#8a93a3; --footline:#e8ebf1; --lede:#39424f;
+  --cardh:#1f3a66; --mi:#0a7a52; --li:#5a36a8; --pi:#9a5a06;
+}
+*{box-sizing:border-box}
+@page{ size:A4 portrait; margin:0; }
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  font-size:10.6pt; line-height:1.5; -webkit-print-color-adjust:exact; print-color-adjust:exact;}
+.slide{ position:relative; min-height:auto; break-before:auto; padding:14mm 16mm 13mm; border-bottom:1px solid var(--stroke); background:#ffffff; }
+.slide:first-child{break-before:auto;}
+.slide::before{ content:""; position:absolute; top:0; left:0; right:0; height:5px;
+  background:linear-gradient(90deg,var(--blue),var(--violet) 55%,var(--green)); }
+.slide:first-child{border-bottom:none;} .cover{min-height:250mm;border-bottom:none;}#references{break-before:page;} h2,h3{break-after:avoid;}
+.kicker{ color:var(--blue); font-weight:700; letter-spacing:.16em; text-transform:uppercase;
+  font-size:8.5pt; margin-bottom:6px; }
+h1{ font-size:30pt; line-height:1.1; margin:.1em 0 .25em; letter-spacing:-.01em; color:var(--inkstrong);}
+h2{ font-size:19pt; line-height:1.15; margin:.1em 0 .5em; letter-spacing:-.01em; color:var(--inkstrong);}
+h3{ font-size:13.5pt; margin:1.1em 0 .3em; color:var(--inkstrong); }
+h4{ font-size:11pt; margin:0 0 .35em; color:var(--inkstrong); }
+p{ margin:.45em 0; } b,strong{color:var(--inkstrong);}
+.muted{ color:var(--muted); }
+ul,ol{ margin:.4em 0 .6em; padding-left:1.25em; } li{ margin:.22em 0; }
+a{ color:var(--blue); text-decoration:none; }
+code{ font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:.92em; }
+table.data{ width:100%; border-collapse:collapse; margin:.7em 0 1em; font-size:9.6pt; break-inside:avoid; }
+table.data th{ background:var(--thbg); color:var(--think); text-align:left; font-weight:600;
+  padding:7px 9px; border-bottom:1px solid var(--stroke); }
+table.data td{ padding:6px 9px; border-bottom:1px solid var(--softline); }
+table.data tbody tr:nth-child(even){ background:var(--rowalt); }
+table.data td b, table.data td strong{ color:var(--inkstrong); }
+.keypoint,.note{ border-radius:10px; padding:11px 14px; margin:.8em 0; break-inside:avoid; font-size:9.9pt;}
+.keypoint{ background:rgba(91,140,255,.10); border:1px solid rgba(91,140,255,.32); border-left:4px solid var(--blue);}
+.note{ background:rgba(255,180,84,.10); border:1px solid rgba(255,180,84,.30); border-left:4px solid var(--amber);}
+.math{ background:var(--panel2); border:1px solid var(--stroke); border-radius:10px;
+  padding:11px 14px; margin:.8em 0; font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  font-size:9.3pt; line-height:1.65; color:var(--codeink); break-inside:avoid; }
+.cols{ display:flex; gap:16px; margin:.6em 0; } .col{ flex:1; min-width:0; }
+.cards{ display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:.7em 0; }
+.card{ background:var(--panel); border:1px solid var(--stroke); border-radius:12px; padding:12px 14px; break-inside:avoid; }
+.card h4{ color:var(--cardh); } .card p{ font-size:9.5pt; color:var(--muted); margin:.2em 0;}
+.tag{ display:inline-block; font-size:7.6pt; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+  padding:1px 7px; border-radius:999px; vertical-align:middle; white-space:nowrap; }
+.t-measured{ background:rgba(61,220,151,.16); color:var(--mi); border:1px solid rgba(61,220,151,.45);}
+.t-lit{ background:rgba(180,140,255,.16); color:var(--li); border:1px solid rgba(180,140,255,.45);}
+.t-proposed{ background:rgba(255,180,84,.16); color:var(--pi); border:1px solid rgba(255,180,84,.45);}
+.figure{ margin:1.1em auto; text-align:center; break-inside:avoid; }
+.figure svg{ display:block; margin:0 auto; max-width:100%; max-height:232mm; height:auto; }
+.figure figcaption{ color:var(--muted); font-size:8.8pt; font-style:italic; margin-top:8px; }
+.cover{ display:flex; flex-direction:column; justify-content:center; }
+.cover-mark{ position:absolute; top:16mm; right:18mm; font-weight:800; letter-spacing:.32em; color:var(--blue); opacity:.6; font-size:12pt;}
+.cover h1{ font-size:40pt; max-width:16em; }
+.lede{ font-size:13.5pt; color:var(--lede); max-width:34em; margin-top:.4em;}
+.thesis{ color:var(--muted); max-width:38em; font-size:10pt; margin-top:1.1em; border-left:3px solid var(--stroke); padding-left:12px;}
+.cover-stats{ display:flex; gap:18px; margin:2.2em 0 1.4em; flex-wrap:wrap;}
+.stat{ background:var(--panel); border:1px solid var(--stroke); border-radius:14px; padding:14px 16px; min-width:185px; flex:1;}
+.stat-num{ font-size:26pt; font-weight:800; color:var(--inkstrong); letter-spacing:-.02em;}
+.stat-lab{ color:var(--muted); font-size:8.8pt; margin-top:4px; line-height:1.4;}
+.cover-foot{ display:flex; gap:28px; color:var(--muted); font-size:10pt; margin-top:.6em;}
+.toc-list{ margin-top:1.2em; }
+.toc-row{ display:flex; align-items:baseline; gap:16px; padding:10px 4px; border-bottom:1px solid var(--softline); color:var(--ink);}
+.toc-n{ color:var(--blue); font-weight:800; font-size:11pt; width:2em;}
+.toc-t{ font-size:12pt; }
+.refs{ font-size:9.7pt; } .refs li{ margin:.4em 0; color:var(--lede); }
+.runfoot{ position:fixed; bottom:8mm; left:18mm; right:18mm; display:flex; justify-content:space-between;
+  color:var(--foot); font-size:7.8pt; letter-spacing:.04em; border-top:1px solid var(--footline); padding-top:5px;}
+</style></head><body><div class="runfoot"><span>Raven &mdash; final-year project &middot; toxic &amp; hate-speech detection</span><span>Niladri Hazra &amp; team &middot; supervisor Dr. Arpita Dutta</span></div>
+<section class="slide cover" id="cover">
+  <div class="cover-mark">RAVEN</div>
+  <div class="cover-body">
+    <div class="kicker">Final-year project &middot; June 2026</div>
+    <h1>Toxic &amp; hate-speech comment detection</h1>
+    <p class="lede">The modelling journey behind Raven &mdash; from classical and RNN baselines, to a
+      fine-tuned transformer, to ensemble learning by simple averaging &mdash; and our own original method
+      for Hindi, <b>RAVEN-X</b>.</p>
+
+    <p class="thesis">Every number in this document was read from our own code and notebook outputs, or from a
+      cited paper. Where a step is reasoning or a plan rather than a result we ran, we say so.</p>
+
+    <div class="cover-stats">
+      <div class="stat">
+        <div class="stat-num">0.9515</div>
+        <div class="stat-lab">DistilBERT ROC-AUC, balanced 20k val <span class="tag t-measured">measured</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0.919</div>
+        <div class="stat-lab">best RNN bias-aware AUC (BiGRU-Conv1D+Attn) <span class="tag t-measured">measured</span></div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">0.842</div>
+        <div class="stat-lab">RAVEN-X MuRIL macro-F1, HASOC Hindi <span class="tag t-measured">measured</span></div>
+      </div>
+    </div>
+
+    <div class="cover-foot">
+      <span><b>Author:</b> Niladri Hazra &amp; team</span>
+      <span><b>Supervisor:</b> Dr. Arpita Dutta</span>
+    </div>
+  </div>
+</section>
+
+
+<section class="slide toc" id="toc"><div class="kicker">Contents</div><h2>What this document covers</h2><p class="muted">We walk through the project once, then through every model we tried in order — what it did, why it falls short (both the maths and what we actually saw), and how the next step fixes it — ending with our own method and the full architecture diagrams.</p><div class="toc-list"><a class="toc-row" href="#overview"><span class="toc-n">01</span><span class="toc-t">What this project is</span></a>
+<a class="toc-row" href="#measure"><span class="toc-n">02</span><span class="toc-t">Data and how we measure</span></a>
+<a class="toc-row" href="#stage1"><span class="toc-n">03</span><span class="toc-t">Stage 1 — Classical & RNN models (LSTM family)</span></a>
+<a class="toc-row" href="#stage2"><span class="toc-n">04</span><span class="toc-t">Stage 2 — DistilBERT: a fine-tuned transformer</span></a>
+<a class="toc-row" href="#stage3"><span class="toc-n">05</span><span class="toc-t">Stage 3 — Scaling up to a larger transformer</span></a>
+<a class="toc-row" href="#stage4"><span class="toc-n">06</span><span class="toc-t">Stage 4 — Ensemble learning by simple averaging</span></a>
+<a class="toc-row" href="#final"><span class="toc-n">07</span><span class="toc-t">The final model — what it does and where it stops</span></a>
+<a class="toc-row" href="#ravenx"><span class="toc-n">08</span><span class="toc-t">RAVEN-X — our original Hindi method</span></a>
+<a class="toc-row" href="#roadmap"><span class="toc-n">09</span><span class="toc-t">What we need next</span></a>
+<a class="toc-row" href="#references"><span class="toc-n">10</span><span class="toc-t">References</span></a></div></section>
+
+<section class="slide" id="overview">
+  <div class="kicker">START HERE · WHAT WE BUILT</div>
+  <h2>What this project is</h2>
+
+  <p>Raven is a system that detects toxic and hate-speech comments. It answers one question: <b>which comments need a human moderator to look at?</b> Instead of a person reading every comment, Raven flags the risky ones as "needs review" and lets the safe ones through. The point is to save the moderator's time, not to replace their judgement.</p>
+
+  <h3>What we built</h3>
+  <p>One model, one API, and three clients. The three clients all speak the same API contract.</p>
+
+  <div class="cards">
+    <div class="card"><h4>The model</h4><p>A fine-tuned DistilBERT classifier that outputs P(toxic) for a comment. <span class="tag t-measured">measured by us</span></p></div>
+    <div class="card"><h4>The API</h4><p>A FastAPI service (<code>raven-api</code>). It has a fallback chain (real model &rarr; LLM via gateway &rarr; keyword heuristic) so a demo never hard-crashes.</p></div>
+    <div class="card"><h4>Web client</h4><p>A React website (<code>raven-web</code>) with a live demo you can type into.</p></div>
+    <div class="card"><h4>Browser extension</h4><p>A Chrome Manifest-V3 extension (<code>extension</code>) that flags comments inline on X, YouTube and Instagram.</p></div>
+    <div class="card"><h4>Mobile client</h4><p>An Expo mobile shell (<code>raven-mobile</code>) that calls the same API.</p></div>
+  </div>
+
+  <div class="figure" id="fig-system">
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720" font-family="-apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6473"/>
+    </marker>
+    <marker id="arrowblue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2f5fe0"/>
+    </marker>
+  </defs>
+
+  <!-- page background -->
+  <rect x="0" y="0" width="1100" height="720" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="40" y="44" fill="#1b1f27" font-size="23" font-weight="bold">Raven system architecture: one model, one API, three clients</text>
+  <text x="40" y="68" fill="#5a6473" font-size="13">Triages comments so a human moderator reads only the risky ones. English DistilBERT track.</text>
+
+  <!-- ===== training row ===== -->
+  <text x="40" y="108" fill="#5a6473" font-size="12" font-weight="bold">TRAIN (offline)</text>
+
+  <!-- Jigsaw CSV -->
+  <rect x="40" y="120" width="190" height="92" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="135" y="148" fill="#1b1f27" font-size="14" font-weight="bold" text-anchor="middle">Jigsaw CSV</text>
+  <text x="135" y="168" fill="#5a6473" font-size="11" text-anchor="middle">Civil Comments corpus</text>
+  <text x="135" y="184" fill="#5a6473" font-size="11" text-anchor="middle">1,804,871 comments</text>
+  <text x="135" y="200" fill="#5a6473" font-size="11" text-anchor="middle">balanced subset: 100,000</text>
+
+  <!-- DistilBERT fine-tune -->
+  <rect x="300" y="116" width="230" height="100" rx="10" fill="#f6f8fc" stroke="#0e9266" stroke-width="1.5"/>
+  <text x="415" y="142" fill="#0e9266" font-size="14" font-weight="bold" text-anchor="middle">DistilBERT fine-tune</text>
+  <text x="415" y="160" fill="#5a6473" font-size="11" text-anchor="middle">notebook / train_distilbert.py</text>
+  <text x="415" y="178" fill="#5a6473" font-size="11" text-anchor="middle">6 layers, 768 dim, 12 heads</text>
+  <text x="415" y="194" fill="#5a6473" font-size="11" text-anchor="middle">~66.96M params, max_len 128</text>
+  <text x="415" y="210" fill="#0e9266" font-size="11" text-anchor="middle">val acc 0.8851, F1 0.887</text>
+
+  <!-- Checkpoint -->
+  <rect x="600" y="120" width="170" height="92" rx="10" fill="#f6f8fc" stroke="#0e9266" stroke-width="1.5"/>
+  <text x="685" y="152" fill="#0e9266" font-size="14" font-weight="bold" text-anchor="middle">Checkpoint</text>
+  <text x="685" y="174" fill="#5a6473" font-size="11" text-anchor="middle">saved fine-tuned</text>
+  <text x="685" y="190" fill="#5a6473" font-size="11" text-anchor="middle">model weights</text>
+
+  <!-- train arrows -->
+  <line x1="230" y1="166" x2="298" y2="166" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="264" y="158" fill="#5a6473" font-size="10" text-anchor="middle">train</text>
+  <line x1="530" y1="166" x2="598" y2="166" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="564" y="158" fill="#5a6473" font-size="10" text-anchor="middle">export</text>
+
+  <!-- checkpoint loaded into API: arrow down -->
+  <path d="M685,212 L685,250 L550,250 L550,278" fill="none" stroke="#0e9266" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="640" y="244" fill="#5a6473" font-size="10" text-anchor="middle">load checkpoint</text>
+
+  <!-- ===== API box ===== -->
+  <text x="40" y="300" fill="#5a6473" font-size="12" font-weight="bold">SERVE</text>
+  <rect x="220" y="282" width="660" height="200" rx="12" fill="#f6f8fc" stroke="#2f5fe0" stroke-width="2"/>
+  <text x="240" y="310" fill="#2f5fe0" font-size="16" font-weight="bold">raven-api (FastAPI)</text>
+  <text x="640" y="310" fill="#5a6473" font-size="11">endpoints:</text>
+  <text x="710" y="310" fill="#1b1f27" font-size="11" font-weight="bold">POST /predict</text>
+  <text x="640" y="328" fill="#1b1f27" font-size="11" font-weight="bold">POST /predict-batch  ·  POST /explain  ·  GET /health</text>
+
+  <!-- resilient chain label -->
+  <text x="240" y="352" fill="#5a6473" font-size="11" font-weight="bold">Resilient fallback chain</text>
+
+  <!-- primary: fine-tuned DistilBERT -->
+  <rect x="240" y="362" width="190" height="96" rx="10" fill="#e9edf5" stroke="#0e9266" stroke-width="1.5"/>
+  <text x="335" y="386" fill="#0e9266" font-size="13" font-weight="bold" text-anchor="middle">Primary</text>
+  <text x="335" y="406" fill="#1b1f27" font-size="12" text-anchor="middle">fine-tuned</text>
+  <text x="335" y="422" fill="#1b1f27" font-size="12" text-anchor="middle">DistilBERT</text>
+  <text x="335" y="444" fill="#5a6473" font-size="10" text-anchor="middle">the real trained model</text>
+
+  <!-- fallback 1: AI-Gateway LLM -->
+  <rect x="455" y="362" width="190" height="96" rx="10" fill="#e9edf5" stroke="#ccd4e0"/>
+  <text x="550" y="386" fill="#5a6473" font-size="13" font-weight="bold" text-anchor="middle">Fallback 1</text>
+  <text x="550" y="406" fill="#5a6473" font-size="12" text-anchor="middle">AI-Gateway LLM</text>
+  <text x="550" y="422" fill="#5a6473" font-size="12" text-anchor="middle">classifier</text>
+  <text x="550" y="444" fill="#5a6473" font-size="10" text-anchor="middle">on model error</text>
+
+  <!-- fallback 2: keyword heuristic -->
+  <rect x="670" y="362" width="190" height="96" rx="10" fill="#e9edf5" stroke="#ccd4e0"/>
+  <text x="765" y="386" fill="#5a6473" font-size="13" font-weight="bold" text-anchor="middle">Fallback 2</text>
+  <text x="765" y="406" fill="#5a6473" font-size="12" text-anchor="middle">keyword demo</text>
+  <text x="765" y="422" fill="#5a6473" font-size="12" text-anchor="middle">heuristic</text>
+  <text x="765" y="444" fill="#5a6473" font-size="10" text-anchor="middle">if gateway unset</text>
+
+  <!-- chain arrows -->
+  <line x1="430" y1="410" x2="453" y2="410" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="441" y="402" fill="#5a6473" font-size="9" text-anchor="middle">on error</text>
+  <line x1="645" y1="410" x2="668" y2="410" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="656" y="402" fill="#5a6473" font-size="9" text-anchor="middle">if unset</text>
+
+  <!-- note under API -->
+  <text x="240" y="476" fill="#5a6473" font-size="11">Note: all clients share one API contract; /health always reports the true source.</text>
+
+  <!-- ===== clients ===== -->
+  <text x="40" y="524" fill="#5a6473" font-size="12" font-weight="bold">CLIENTS</text>
+
+  <!-- arrows from API down to clients -->
+  <path d="M380,482 L380,520 L210,520 L210,556" fill="none" stroke="#2f5fe0" stroke-width="1.6" marker-end="url(#arrowblue)"/>
+  <line x1="550" y1="482" x2="550" y2="556" stroke="#2f5fe0" stroke-width="1.6" marker-end="url(#arrowblue)"/>
+  <path d="M720,482 L720,520 L890,520 L890,556" fill="none" stroke="#2f5fe0" stroke-width="1.6" marker-end="url(#arrowblue)"/>
+
+  <!-- raven-web -->
+  <rect x="60" y="558" width="300" height="118" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="210" y="586" fill="#1b1f27" font-size="14" font-weight="bold" text-anchor="middle">raven-web</text>
+  <text x="210" y="606" fill="#5a6473" font-size="11" text-anchor="middle">React demo website</text>
+  <text x="210" y="626" fill="#5a6473" font-size="11" text-anchor="middle">live in-page demo of the</text>
+  <text x="210" y="642" fill="#5a6473" font-size="11" text-anchor="middle">classifier and explanations</text>
+
+  <!-- extension -->
+  <rect x="400" y="558" width="300" height="118" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="550" y="586" fill="#1b1f27" font-size="14" font-weight="bold" text-anchor="middle">extension</text>
+  <text x="550" y="606" fill="#5a6473" font-size="11" text-anchor="middle">Chrome Manifest V3</text>
+  <text x="550" y="626" fill="#5a6473" font-size="11" text-anchor="middle">inline pills flag comments on</text>
+  <text x="550" y="642" fill="#5a6473" font-size="11" text-anchor="middle">X / YouTube / Instagram</text>
+
+  <!-- mobile -->
+  <rect x="740" y="558" width="300" height="118" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="890" y="586" fill="#1b1f27" font-size="14" font-weight="bold" text-anchor="middle">raven-mobile</text>
+  <text x="890" y="606" fill="#5a6473" font-size="11" text-anchor="middle">Expo mobile shell</text>
+  <text x="890" y="626" fill="#5a6473" font-size="11" text-anchor="middle">review queue for the</text>
+  <text x="890" y="642" fill="#5a6473" font-size="11" text-anchor="middle">comments needing review</text>
+
+  <!-- legend -->
+  <rect x="40" y="694" width="14" height="14" rx="3" fill="#0e9266"/>
+  <text x="60" y="705" fill="#5a6473" font-size="11">trained model (measured by us)</text>
+  <rect x="300" y="694" width="14" height="14" rx="3" fill="#2f5fe0"/>
+  <text x="320" y="705" fill="#5a6473" font-size="11">API</text>
+  <rect x="380" y="694" width="14" height="14" rx="3" fill="#e9edf5" stroke="#ccd4e0"/>
+  <text x="400" y="705" fill="#5a6473" font-size="11">fallback (muted)</text>
+</svg>
+<figcaption>Figure 1 — end-to-end system: training to three clients.</figcaption></div>
+
+  <h3>The dataset (English track)</h3>
+  <p>We trained the English model on the Jigsaw "Unintended Bias in Toxicity Classification" corpus (Civil Comments).</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Total comments</td><td>1,804,871 <span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>Class balance</td><td>1,660,537 non-toxic vs 144,334 toxic (~11.5 : 1, about 8% toxic)</td></tr>
+      <tr><td>Label</td><td>continuous <code>target</code> in [0,1], binarised at 0.5 (<code>target &ge; 0.5 &rarr; toxic</code>)</td></tr>
+      <tr><td>Bias measurement</td><td>identity columns (muslim, black, white, female, &hellip;) allow per-subgroup checks</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note"><b>Honest caveat.</b> Two model families in this document were measured under two different evaluation regimes, and we keep them separate. The RNN/classical family was evaluated on the large split with the Jigsaw bias-aware AUC. DistilBERT was evaluated on a balanced 100,000-comment down-sample (50,000 per class) with plain accuracy/F1/ROC-AUC. The two sets of numbers are <b>not</b> directly comparable.</div>
+
+  <h3>Roadmap — how this document reads</h3>
+  <p>The talk walks up a ladder of model capacity, and then turns to our own contribution.</p>
+
+  <ol>
+    <li><b>Classical / TF-IDF</b> — bag-of-words with logistic regression, the simplest baseline.</li>
+    <li><b>LSTM &amp; RNN family</b> — single LSTM, BiLSTM, weighted BiLSTM, BiGRU with attention.</li>
+    <li><b>DistilBERT</b> — our transformer: a distilled backbone we fine-tuned.</li>
+    <li><b>Larger transformer</b> — the next capacity step (reasoning + literature, <span class="tag t-proposed">proposed next step</span>, not run by us).</li>
+    <li><b>Ensemble</b> — simple averaging of diverse models (theory + Kaggle literature).</li>
+    <li><b>Final model</b> — what it can and cannot do, stated honestly.</li>
+    <li><b>RAVEN-X</b> — our original contribution: cross-script rationale transfer for low-resource Hindi.</li>
+    <li><b>Architecture diagrams</b> — how the pieces fit together.</li>
+  </ol>
+
+  <div class="keypoint"><b>Takeaway.</b> Raven is a toxicity triage system: one fine-tuned model behind one API, used by three clients. This document climbs from a simple baseline up to a transformer and an ensemble, then presents RAVEN-X, our own method for low-resource Hindi.</div>
+</section>
+
+
+<section class="slide" id="measure">
+  <div class="kicker">FOUNDATIONS · DATA &amp; METRICS</div>
+  <h2>Data and how we measure</h2>
+
+  <p>The English track uses the <b>Jigsaw "Unintended Bias in Toxicity Classification"</b> data (the Civil Comments corpus). It has <b>1,804,871</b> comments <span class="tag t-measured">measured by us</span>. Each comment carries a continuous <code>target</code> in [0,1]. We treat a comment as toxic when <code>target &ge; 0.5</code>, so the score is binarised at 0.5. The data also has identity columns (muslim, black, white, female, and others) that let us measure bias by group.</p>
+
+  <h3>Why balancing and the right metric matter</h3>
+  <p>The raw data is heavily imbalanced: <b>1,660,537</b> non-toxic against <b>144,334</b> toxic comments <span class="tag t-measured">measured by us</span>. That is about <b>11.5 : 1</b>, roughly 8% toxic. On data like this, plain accuracy is misleading. A model that labels everything "non-toxic" already scores about 92% accuracy while catching no toxic comment at all. So we cannot trust accuracy alone; we have to look at how the minority (toxic) class is handled.</p>
+
+  <h3>The metrics, one line each</h3>
+  <table class="data">
+    <thead><tr><th>Metric</th><th>Plain definition</th></tr></thead>
+    <tbody>
+      <tr><td>Accuracy</td><td>Fraction of all comments labelled correctly.</td></tr>
+      <tr><td>Precision (toxic)</td><td>Of the comments we flagged toxic, how many really were.</td></tr>
+      <tr><td>Recall (toxic)</td><td>Of the truly toxic comments, how many we caught.</td></tr>
+      <tr><td>F1 (toxic)</td><td>Harmonic mean of precision and recall &mdash; one number that balances both.</td></tr>
+      <tr><td>Macro-F1</td><td>F1 computed per class, then averaged &mdash; treats both classes equally regardless of size.</td></tr>
+      <tr><td>ROC-AUC</td><td>Probability the model ranks a random toxic comment above a random non-toxic one.</td></tr>
+      <tr><td>Jigsaw bias-aware AUC</td><td>A weighted blend of the overall AUC and per-identity-subgroup AUCs, so a model is rewarded only if it ranks well within each identity group, not just on average.</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Two evaluation regimes &mdash; kept separate on purpose</h3>
+  <p>The numbers in this project come from two different setups. We keep them apart because mixing them would be a mistake.</p>
+  <div class="cols">
+    <div class="col">
+      <h4>Regime A &mdash; RNN / classical family</h4>
+      <ul>
+        <li>Trained and evaluated on the large, imbalanced split.</li>
+        <li>Reported with the <b>Jigsaw bias-aware AUC</b>.</li>
+        <li>Keras tokenizer, vocab <b>100,000</b>, <code>max_sequence_length 300</code>.</li>
+        <li>Pretrained 300-d word embeddings, shape <b>(276,289 &times; 300)</b>.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>Regime B &mdash; DistilBERT</h4>
+      <ul>
+        <li>Trained on a <b>balanced down-sample: 50,000 per class = 100,000</b>.</li>
+        <li>Split <b>80/20 &rarr; 80,000 train / 20,000 val</b> (10k per class).</li>
+        <li>Reported with plain accuracy / F1 / ROC-AUC on that balanced val set.</li>
+        <li>WordPiece tokenizer, 30,522 vocab, <code>max_length 128</code>.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="note"><b>Honest caveat.</b> The RNN/classical numbers (Regime A) and the DistilBERT numbers (Regime B) were measured under different data splits, sequence lengths, and metrics &mdash; one uses bias-aware AUC on the large imbalanced set, the other uses plain ROC-AUC on a balanced 20k val set. So their headline numbers are <b>not directly comparable</b>. We do not put them side by side and pick a winner on raw accuracy. Instead we compare <b>behaviour</b>, especially recall on the toxic class.</p></div>
+
+  <div class="keypoint"><b>Takeaway.</b> For moderation, recall on the toxic (minority) class is the number that actually matters. A missed toxic comment (false negative) is the costly error &mdash; it reaches users. High accuracy on an 11.5:1 split can hide a model that misses most toxic comments, so we judge models by how much of the toxic class they catch.</div>
+</section>
+
+
+<section class="slide" id="stage1">
+  <div class="kicker">STAGE 1 · CLASSICAL &amp; RNN BASELINES</div>
+  <h2>Stage 1 — Classical and RNN models (the LSTM family)</h2>
+
+  <p>This was the first modelling stage on the English Jigsaw task. The aim was to set a baseline
+  before trying anything heavier. We built a bag-of-words classifier and then a family of recurrent
+  networks, all on the same data.</p>
+
+  <div class="note"><b>Honest caveat.</b> These classical and RNN baselines were primarily a
+  teammate's contribution (Debangshu Dey). We use them here as a comparison family.
+  The DistilBERT transformer and the product stack are the author's (Niladri Hazra) track. We do not
+  claim the author trained the LSTMs.</div>
+
+  <h3>(a) What we built</h3>
+  <p>All RNN models used the same input setup: a Keras tokenizer with a vocabulary of 100,000,
+  sequences padded or cut to a maximum length of 300, and pretrained word embeddings of shape
+  276,289 &times; 300. These embeddings are <b>context-free</b>: each word has one fixed 300-d vector,
+  the same vector no matter where the word appears.</p>
+  <ul>
+    <li>TF-IDF + Logistic Regression — a bag-of-words classifier (SGD, log-loss, alpha = 1e-5).</li>
+    <li>Single LSTM (128 units, 10 epochs).</li>
+    <li>BiLSTM — two BiLSTM layers of 128 units, global max pooling, dense head.</li>
+    <li>Weighted BiLSTM — the same with class weights to fight imbalance.</li>
+    <li>BiGRU + Attention (64 units, attention).</li>
+    <li>BiGRU-Conv1D + Attention (64 units, attention, plus a Conv1D layer).</li>
+  </ul>
+
+  <h3>(b) Real results</h3>
+  <p>These are measured numbers <span class="tag t-measured">measured by us</span>. "Bias-AUC" is
+  the Jigsaw bias-aware AUC (a weighted blend of overall AUC and per-identity-subgroup AUCs).
+  "Val acc" is the best validation accuracy.</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Model</th><th>Architecture detail</th><th>Val acc</th><th>Bias-AUC</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TF-IDF + Logistic Regression</td><td>bag-of-words (SGD, log-loss, alpha 1e-5)</td><td>0.87</td><td>0.9061</td></tr>
+      <tr><td>Single LSTM</td><td>LSTM 128u, 10 epochs, pretrained 300-d emb</td><td>0.9469</td><td>0.8927</td></tr>
+      <tr><td>BiLSTM</td><td>2&times; BiLSTM 128u + GlobalMaxPool + Dense</td><td>0.8114</td><td>0.8992</td></tr>
+      <tr><td>Weighted BiLSTM</td><td>same + class weights</td><td>0.8561</td><td>0.9056</td></tr>
+      <tr><td>BiGRU + Attention</td><td>BiGRU 64u + attention</td><td>0.9517</td><td>0.9181</td></tr>
+      <tr><td>BiGRU-Conv1D + Attention</td><td>BiGRU 64u + attention + Conv1D</td><td>0.9514</td><td>0.9190</td></tr>
+    </tbody>
+  </table>
+
+  <div class="figure" id="fig-stage1-rnn">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="590" viewBox="0 0 1000 590" font-family="-apple-system, Helvetica, Arial, sans-serif">
+<rect x="1" y="1" width="998" height="588" rx="16" fill="#f6f8fc" stroke="#ccd4e0"/>
+<text x="40" y="46" fill="#1b1f27" font-size="21" font-weight="700">Classical &amp; RNN baselines &#8212; Jigsaw bias-aware AUC</text>
+<text x="40" y="70" fill="#5a6473" font-size="12.5">Higher is better. y-axis zoomed to 0.88&#8211;0.92 so the small gaps are visible. Regime A; measured by us.</text>
+<line x1="140" y1="450.0" x2="960" y2="450.0" stroke="#ccd4e0" stroke-dasharray="3 4"/>
+<text x="128" y="454.0" fill="#5a6473" font-size="12" text-anchor="end">0.88</text>
+<line x1="140" y1="361.2" x2="960" y2="361.2" stroke="#ccd4e0" stroke-dasharray="3 4"/>
+<text x="128" y="365.2" fill="#5a6473" font-size="12" text-anchor="end">0.89</text>
+<line x1="140" y1="272.5" x2="960" y2="272.5" stroke="#ccd4e0" stroke-dasharray="3 4"/>
+<text x="128" y="276.5" fill="#5a6473" font-size="12" text-anchor="end">0.90</text>
+<line x1="140" y1="183.8" x2="960" y2="183.8" stroke="#ccd4e0" stroke-dasharray="3 4"/>
+<text x="128" y="187.8" fill="#5a6473" font-size="12" text-anchor="end">0.91</text>
+<line x1="140" y1="95.0" x2="960" y2="95.0" stroke="#ccd4e0" stroke-dasharray="3 4"/>
+<text x="128" y="99.0" fill="#5a6473" font-size="12" text-anchor="end">0.92</text>
+<rect x="165.3" y="218.4" width="86" height="231.6" rx="6" fill="#5a6473" fill-opacity="0.85" stroke="#5a6473"/>
+<text x="208.3" y="209.4" fill="#1b1f27" font-size="13.5" font-weight="700" text-anchor="middle">0.9061</text>
+<text x="208.3" y="472.0" fill="#5a6473" font-size="11.5" text-anchor="middle">TF-IDF +</text>
+<text x="208.3" y="487.0" fill="#5a6473" font-size="11.5" text-anchor="middle">LogReg</text>
+<rect x="302.0" y="337.3" width="86" height="112.7" rx="6" fill="#2f5fe0" fill-opacity="0.85" stroke="#2f5fe0"/>
+<text x="345.0" y="328.3" fill="#1b1f27" font-size="13.5" font-weight="700" text-anchor="middle">0.8927</text>
+<text x="345.0" y="472.0" fill="#5a6473" font-size="11.5" text-anchor="middle">Single</text>
+<text x="345.0" y="487.0" fill="#5a6473" font-size="11.5" text-anchor="middle">LSTM</text>
+<rect x="438.7" y="279.6" width="86" height="170.4" rx="6" fill="#2f5fe0" fill-opacity="0.85" stroke="#2f5fe0"/>
+<text x="481.7" y="270.6" fill="#1b1f27" font-size="13.5" font-weight="700" text-anchor="middle">0.8992</text>
+<text x="481.7" y="472.0" fill="#5a6473" font-size="11.5" text-anchor="middle">BiLSTM</text>
+<rect x="575.3" y="222.8" width="86" height="227.2" rx="6" fill="#2f5fe0" fill-opacity="0.85" stroke="#2f5fe0"/>
+<text x="618.3" y="213.8" fill="#1b1f27" font-size="13.5" font-weight="700" text-anchor="middle">0.9056</text>
+<text x="618.3" y="472.0" fill="#5a6473" font-size="11.5" text-anchor="middle">Weighted</text>
+<text x="618.3" y="487.0" fill="#5a6473" font-size="11.5" text-anchor="middle">BiLSTM</text>
+<rect x="712.0" y="111.9" width="86" height="338.1" rx="6" fill="#0e9266" fill-opacity="0.85" stroke="#0e9266"/>
+<text x="755.0" y="102.9" fill="#1b1f27" font-size="13.5" font-weight="700" text-anchor="middle">0.9181</text>
+<text x="755.0" y="472.0" fill="#5a6473" font-size="11.5" text-anchor="middle">BiGRU +</text>
+<text x="755.0" y="487.0" fill="#5a6473" font-size="11.5" text-anchor="middle">Attn</text>
+<rect x="848.7" y="103.9" width="86" height="346.1" rx="6" fill="#0e9266" fill-opacity="0.85" stroke="#0e9266"/>
+<text x="891.7" y="94.9" fill="#1b1f27" font-size="13.5" font-weight="700" text-anchor="middle">0.9190</text>
+<text x="891.7" y="472.0" fill="#5a6473" font-size="11.5" text-anchor="middle">BiGRU-Conv1D</text>
+<text x="891.7" y="487.0" fill="#5a6473" font-size="11.5" text-anchor="middle">+ Attn</text>
+<text x="960" y="83" fill="#0e9266" font-size="12" text-anchor="end">the whole family sits in a ~0.89&#8211;0.92 band</text>
+<rect x="40" y="560" width="13" height="13" rx="3" fill="#5a6473"/>
+<text x="59" y="571" fill="#5a6473" font-size="12">classical</text>
+<rect x="155.7" y="560" width="13" height="13" rx="3" fill="#2f5fe0"/>
+<text x="174.7" y="571" fill="#5a6473" font-size="12">LSTM family</text>
+<rect x="286.0" y="560" width="13" height="13" rx="3" fill="#0e9266"/>
+<text x="305.0" y="571" fill="#5a6473" font-size="12">GRU + attention</text>
+</svg>
+<figcaption>Figure 2 — Bias-aware AUC across the six classical and RNN baselines (measured by us).</figcaption></div>
+
+  <h3>(c) The mathematical reason the RNN approach is limited</h3>
+  <p>The limits below are general theory <span class="tag t-lit">literature</span>, not specific to
+  our run.</p>
+
+  <div class="math">
+    h_t = f(h_{t-1}, x_t)<br>
+    path length between token i and token j  =  O(|i &minus; j|) steps<br>
+    &rarr; a signal from token i to token j passes through |i &minus; j| multiplications<br>
+    &rarr; repeated products shrink or grow  &rarr;  vanishing / exploding gradients
+  </div>
+
+  <ul>
+    <li><b>Sequential recurrence.</b> The hidden state is computed step by step. The path between two
+    tokens grows with their distance, so a long-range dependency must survive many matrix
+    multiplications. LSTM gating (Hochreiter &amp; Schmidhuber, 1997) softens this but does not remove
+    it. <span class="tag t-lit">literature</span></li>
+    <li><b>No parallelism over the sequence.</b> Because step t needs step t&minus;1, the network must
+    unroll one token at a time, so training and inference are slow. <span class="tag t-lit">literature</span></li>
+    <li><b>Context-free embeddings.</b> One fixed vector per word. "kill" in "you killed it!" (praise)
+    and "kill" in a threat start from the same vector, so the RNN must separate them from a weak
+    signal. <span class="tag t-lit">literature</span></li>
+    <li><b>Information bottleneck.</b> The whole left context is squeezed into a single fixed-size
+    hidden vector. <span class="tag t-lit">literature</span></li>
+  </ul>
+
+  <h3>(d) The drawback we actually saw</h3>
+  <p>These are our measured numbers <span class="tag t-measured">measured by us</span>.</p>
+  <ul>
+    <li><b>High accuracy hides low toxic recall.</b> On the imbalanced set, TF-IDF+LogReg has a toxic
+    recall of about 0.448 and the Single LSTM about 0.452. They miss more than half of toxic comments
+    while still reading as roughly "94% accurate" on imbalanced data. BiLSTM reaches a toxic recall of
+    about 0.914, but at a much lower validation accuracy (0.8114).</li>
+    <li><b>Diminishing returns from architecture tweaks.</b> Making the model bidirectional, then
+    weighted, then attention-augmented only moves the Bias-AUC from about 0.89 up to about 0.92. The
+    extra machinery does not break past this band.</li>
+  </ul>
+
+  <div class="keypoint"><b>Takeaway.</b> The ceiling here is the representation, not the wiring.
+  Context-free word vectors plus a sequential, fixed-size bottleneck cap what these models can learn,
+  and stacking more recurrent layers on top of the same embeddings gives little back. This is what
+  motivates a contextual, attention-based, pretrained transformer.</div>
+
+  <h3>(e) What it motivates</h3>
+  <p>The next stage replaces context-free vectors with context-dependent ones and replaces the
+  sequential bottleneck with attention, so every token can reach every other token in one step. That
+  is Stage 2: fine-tuning a pretrained transformer (DistilBERT).</p>
+</section>
+
+
+<section class="slide" id="stage2">
+  <div class="kicker">STAGE 2 · DISTILBERT TRANSFORMER</div>
+  <h2>Stage 2 — DistilBERT: a fine-tuned transformer</h2>
+
+  <p>The RNN models in Stage 1 read a sentence one word at a time and kept a single
+  fixed vector per word. That gave two problems: long-range context decays as it passes
+  through the chain, and a word like "killed" gets the same vector whether it is a threat
+  or a sports headline. A transformer fixes both. We did not train one from scratch — we
+  took an existing pretrained model and fine-tuned it.</p>
+
+  <h3>Why attention beats recurrence</h3>
+  <p>The transformer (Vaswani et al., 2017 <span class="tag t-lit">literature</span>)
+  replaces recurrence with self-attention. Three properties matter here:</p>
+  <ul>
+    <li><b>Short path length.</b> Self-attention connects every pair of tokens directly,
+    so the path between any two words is <b>O(1)</b>, against <b>O(n)</b> for an RNN that
+    must pass information step by step. Long-range context is reached in one hop.
+    <span class="tag t-lit">literature</span></li>
+    <li><b>Contextual, bidirectional embeddings.</b> Each token's vector is computed from
+    the whole sentence, so the same word gets a different representation in a different
+    context. This is what removes the fixed-vector limit behind the "killed it" problem.
+    <span class="tag t-lit">literature</span></li>
+    <li><b>Parallel and pretrained.</b> All positions are processed in parallel (no
+    sequential dependency), and the backbone is pretrained on a large corpus. Fine-tuning
+    then needs only a little task data — this is transfer learning.
+    <span class="tag t-lit">literature</span></li>
+  </ul>
+
+  <div class="math">
+    RNN inter-token path = O(n) &rarr; signal decays over distance<br>
+    self-attention inter-token path = O(1) &rarr; direct long-range link
+  </div>
+
+  <h3>What we actually did</h3>
+  <p>We did <b>not</b> distill anything ourselves. We took the already-distilled
+  <code>distilbert-base-uncased</code> and fine-tuned it. DistilBERT (Sanh et al., 2019
+  <span class="tag t-lit">literature</span>) is the result of distilling BERT-base into a
+  smaller student: about <b>66M parameters</b>, <b>6 transformer layers</b>, roughly
+  <b>40% smaller</b> and <b>60% faster</b> than BERT while keeping about <b>97%</b> of its
+  performance <span class="tag t-lit">literature</span>. We fine-tuned it on a balanced
+  100k subset of Jigsaw (50k toxic + 50k non-toxic, split 80k train / 20k val)
+  <span class="tag t-measured">measured by us</span>.</p>
+
+  <p>The architecture, layer by layer: WordPiece tokenizer (vocab <b>30,522</b>,
+  max length <b>128</b>) &rarr; embeddings &rarr; <b>6 transformer blocks</b> (each with
+  <b>12 attention heads</b> and a feed-forward block 768&rarr;3072&rarr;768) &rarr; the
+  first-token <b>[CLS]</b> hidden state (768-d) &rarr; pre_classifier Linear(768&rarr;768)
+  with ReLU and dropout &rarr; classifier Linear(768&rarr;2) &rarr; softmax giving
+  P(toxic). Training used the HuggingFace Trainer with AdamW, learning rate about 5e-5,
+  batch size 16, on a single GPU.</p>
+
+  <div class="figure" id="fig-distilbert">
+<svg id="fig-distilbert" xmlns="http://www.w3.org/2000/svg" width="760" height="1040" viewBox="0 0 760 1040" font-family="-apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,3.5 L0,7 Z" fill="#2f5fe0"/>
+    </marker>
+    <marker id="arrowMute" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0,0 L8,3.5 L0,7 Z" fill="#5a6473"/>
+    </marker>
+  </defs>
+
+  <!-- page background -->
+  <rect x="0" y="0" width="760" height="1040" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="32" y="42" fill="#1b1f27" font-size="23" font-weight="bold">DistilBERT for sequence classification</text>
+  <text x="32" y="66" fill="#5a6473" font-size="13">Top-to-bottom data flow. Parameter counts are shown on the right of each block.</text>
+
+  <!-- ============ MAIN COLUMN (x ~ 32..420) ============ -->
+
+  <!-- 1) Input text -->
+  <rect x="32" y="88" width="388" height="52" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="50" y="113" fill="#1b1f27" font-size="14" font-weight="bold">1. Input comment text</text>
+  <text x="50" y="131" fill="#5a6473" font-size="12">one comment string</text>
+  <line x1="226" y1="140" x2="226" y2="160" stroke="#5a6473" stroke-width="1.5" marker-end="url(#arrowMute)"/>
+
+  <!-- 2) Tokenizer -->
+  <rect x="32" y="162" width="388" height="64" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="50" y="186" fill="#1b1f27" font-size="14" font-weight="bold">2. WordPiece tokenizer</text>
+  <text x="50" y="204" fill="#5a6473" font-size="12">30,522 vocab &#183; max_len 128</text>
+  <text x="50" y="220" fill="#5a6473" font-size="12">output: input_ids + attention_mask</text>
+  <line x1="226" y1="226" x2="226" y2="246" stroke="#5a6473" stroke-width="1.5" marker-end="url(#arrowMute)"/>
+
+  <!-- 3) Embeddings (blue) -->
+  <rect x="32" y="248" width="388" height="78" rx="10" fill="#f6f8fc" stroke="#2f5fe0" stroke-width="1.6"/>
+  <text x="50" y="272" fill="#2f5fe0" font-size="14" font-weight="bold">3. Embeddings</text>
+  <text x="50" y="290" fill="#1b1f27" font-size="12">word (30522 &#215; 768) + positional (512 &#215; 768)</text>
+  <text x="50" y="307" fill="#1b1f27" font-size="12">+ LayerNorm</text>
+  <text x="50" y="322" fill="#5a6473" font-size="11">sequence of 768-d vectors</text>
+  <text x="404" y="290" fill="#2f5fe0" font-size="12" font-weight="bold" text-anchor="end">~23.8M params</text>
+  <line x1="226" y1="326" x2="226" y2="346" stroke="#2f5fe0" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- 4) Transformer stack (blue) -->
+  <rect x="32" y="348" width="388" height="96" rx="10" fill="#e9edf5" stroke="#2f5fe0" stroke-width="1.6"/>
+  <text x="50" y="374" fill="#2f5fe0" font-size="15" font-weight="bold">4. 6 &#215; Transformer block</text>
+  <text x="50" y="394" fill="#1b1f27" font-size="12">stacked encoder layers (no decoder)</text>
+  <text x="50" y="411" fill="#1b1f27" font-size="12">768 hidden &#183; 12 attention heads</text>
+  <text x="50" y="428" fill="#5a6473" font-size="11">see one block expanded on the right</text>
+  <text x="404" y="374" fill="#2f5fe0" font-size="12" font-weight="bold" text-anchor="end">~42.5M params</text>
+
+  <!-- dashed connector from stack to callout -->
+  <path d="M420,396 L468,396" stroke="#2f5fe0" stroke-width="1.4" stroke-dasharray="4 4" fill="none"/>
+
+  <line x1="226" y1="444" x2="226" y2="468" stroke="#2f5fe0" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- 5) CLS token -->
+  <rect x="32" y="470" width="388" height="58" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="50" y="494" fill="#1b1f27" font-size="14" font-weight="bold">5. Take first-token [CLS] hidden state</text>
+  <text x="50" y="514" fill="#5a6473" font-size="12">one 768-d vector for the whole comment</text>
+  <line x1="226" y1="528" x2="226" y2="548" stroke="#5a6473" stroke-width="1.5" marker-end="url(#arrowMute)"/>
+
+  <!-- 6) pre_classifier -->
+  <rect x="32" y="550" width="388" height="72" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="50" y="574" fill="#1b1f27" font-size="14" font-weight="bold">6. pre_classifier</text>
+  <text x="50" y="592" fill="#1b1f27" font-size="12">Linear(768 &#8594; 768) + ReLU</text>
+  <text x="50" y="609" fill="#1b1f27" font-size="12">+ Dropout(0.2)</text>
+  <text x="404" y="574" fill="#5a6473" font-size="12" font-weight="bold" text-anchor="end">~0.59M params</text>
+  <line x1="226" y1="622" x2="226" y2="642" stroke="#5a6473" stroke-width="1.5" marker-end="url(#arrowMute)"/>
+
+  <!-- 7) classifier -->
+  <rect x="32" y="644" width="388" height="62" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="50" y="668" fill="#1b1f27" font-size="14" font-weight="bold">7. classifier</text>
+  <text x="50" y="688" fill="#1b1f27" font-size="12">Linear(768 &#8594; 2) &#8594; 2 logits</text>
+  <text x="404" y="668" fill="#5a6473" font-size="12" font-weight="bold" text-anchor="end">~1.5K params</text>
+  <line x1="226" y1="706" x2="226" y2="726" stroke="#5a6473" stroke-width="1.5" marker-end="url(#arrowMute)"/>
+
+  <!-- 8) softmax / decision (green accent for output) -->
+  <rect x="32" y="728" width="388" height="92" rx="10" fill="#f6f8fc" stroke="#0e9266" stroke-width="1.6"/>
+  <text x="50" y="752" fill="#0e9266" font-size="14" font-weight="bold">8. softmax &#8594; decision</text>
+  <text x="50" y="772" fill="#1b1f27" font-size="12">softmax over 2 logits &#8594; P(toxic)</text>
+  <text x="50" y="789" fill="#1b1f27" font-size="12">threshold 0.5</text>
+  <text x="50" y="809" fill="#1b1f27" font-size="12">label: P &#8805; 0.5 &#8594; review &#160;&#160;|&#160;&#160; else safe</text>
+
+  <!-- ============ CALLOUT: one transformer block (right side) ============ -->
+  <rect x="470" y="300" width="266" height="320" rx="12" fill="#e9edf5" stroke="#2f5fe0" stroke-width="1.6"/>
+  <text x="486" y="326" fill="#2f5fe0" font-size="14" font-weight="bold">Inside one Transformer block</text>
+  <text x="486" y="344" fill="#5a6473" font-size="11">(all 6 blocks are identical)</text>
+
+  <!-- sub: MHSA -->
+  <rect x="486" y="356" width="234" height="44" rx="8" fill="#f6f8fc" stroke="#2f5fe0"/>
+  <text x="603" y="378" fill="#1b1f27" font-size="12.5" font-weight="bold" text-anchor="middle">Multi-Head Self-Attention</text>
+  <text x="603" y="394" fill="#5a6473" font-size="11" text-anchor="middle">12 heads</text>
+  <line x1="603" y1="400" x2="603" y2="418" stroke="#2f5fe0" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- sub: Add & Norm -->
+  <rect x="486" y="420" width="234" height="34" rx="8" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="603" y="442" fill="#1b1f27" font-size="12.5" text-anchor="middle">Add &amp; Norm (residual + LayerNorm)</text>
+  <line x1="603" y1="454" x2="603" y2="472" stroke="#2f5fe0" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- sub: FFN -->
+  <rect x="486" y="474" width="234" height="52" rx="8" fill="#f6f8fc" stroke="#2f5fe0"/>
+  <text x="603" y="496" fill="#1b1f27" font-size="12.5" font-weight="bold" text-anchor="middle">Feed-Forward</text>
+  <text x="603" y="513" fill="#5a6473" font-size="11" text-anchor="middle">768 &#8594; 3072 &#8594; 768, GELU</text>
+  <line x1="603" y1="526" x2="603" y2="544" stroke="#2f5fe0" stroke-width="1.4" marker-end="url(#arrow)"/>
+
+  <!-- sub: Add & Norm 2 -->
+  <rect x="486" y="546" width="234" height="34" rx="8" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="603" y="568" fill="#1b1f27" font-size="12.5" text-anchor="middle">Add &amp; Norm (residual + LayerNorm)</text>
+
+  <text x="486" y="602" fill="#5a6473" font-size="11">Output feeds the next block.</text>
+
+  <!-- ============ footer ============ -->
+  <rect x="32" y="852" width="704" height="56" rx="10" fill="#e9edf5" stroke="#ccd4e0"/>
+  <text x="50" y="877" fill="#2f5fe0" font-size="14" font-weight="bold">~66.96M params total</text>
+  <text x="50" y="897" fill="#1b1f27" font-size="12.5">6 layers &#183; 768 hidden &#183; 12 heads</text>
+  <text x="718" y="877" fill="#5a6473" font-size="11.5" text-anchor="end">backbone: distilbert-base-uncased</text>
+  <text x="718" y="897" fill="#5a6473" font-size="11.5" text-anchor="end">head: DistilBertForSequenceClassification, num_labels=2</text>
+
+  <!-- legend -->
+  <rect x="32" y="924" width="704" height="84" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="50" y="948" fill="#5a6473" font-size="12" font-weight="bold">Legend</text>
+  <rect x="50" y="958" width="14" height="14" rx="3" fill="#2f5fe0"/>
+  <text x="72" y="970" fill="#1b1f27" font-size="12">transformer / main path</text>
+  <rect x="270" y="958" width="14" height="14" rx="3" fill="#0e9266"/>
+  <text x="292" y="970" fill="#1b1f27" font-size="12">decision output</text>
+  <text x="50" y="994" fill="#5a6473" font-size="11.5">Counts are from the model architecture in FACTS &#167;3. They are an architectural breakdown, not a separately measured result.</text>
+</svg>
+<figcaption>Figure 3 — DistilBERT-for-sequence-classification, layer by layer (with parameter counts).</figcaption></div>
+
+  <h3>Our real results</h3>
+  <p>All numbers below are on the balanced 20k validation set (10k per class)
+  <span class="tag t-measured">measured by us</span>. We report two runs: 1 epoch
+  (2,500 steps) and the saved 3-epoch model (7,500 steps).</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Metric (balanced 20k val)</th><th>1 epoch</th><th>3 epochs (saved final)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Accuracy</td><td>0.8895</td><td>0.8851</td></tr>
+      <tr><td>Precision (toxic)</td><td>0.873</td><td>0.875</td></tr>
+      <tr><td>Recall (toxic)</td><td>0.912</td><td>0.899</td></tr>
+      <tr><td>F1 (toxic)</td><td>0.892</td><td>0.887</td></tr>
+      <tr><td>Validation loss</td><td>0.537</td><td>0.818</td></tr>
+      <tr><td>Training loss</td><td>0.6075</td><td>0.4207</td></tr>
+      <tr><td>ROC-AUC</td><td>not reported</td><td>0.9515</td></tr>
+      <tr><td>PR-AUC (avg precision)</td><td>not reported</td><td>0.9495</td></tr>
+    </tbody>
+  </table>
+
+  <p>Confusion matrix for the 3-epoch model (rows = actual, columns = predicted; 10k per
+  class) <span class="tag t-measured">measured by us</span>:</p>
+
+  <table class="data">
+    <thead>
+      <tr><th></th><th>Pred non-toxic</th><th>Pred toxic</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><b>Actual non-toxic</b></td><td>TN 8712</td><td>FP 1288</td></tr>
+      <tr><td><b>Actual toxic</b></td><td>FN 1011</td><td>TP 8989</td></tr>
+    </tbody>
+  </table>
+
+  <div class="keypoint"><b>Takeaway.</b> The win over the RNN family is in behaviour, not
+  raw accuracy. DistilBERT reaches about <b>0.90 toxic recall</b> on the balanced 20k val set
+  <span class="tag t-measured">measured by us</span>, while the simple high-accuracy
+  baseline TF-IDF + Logistic Regression had toxic recall below <b>0.45</b> on the large
+  imbalanced split <span class="tag t-measured">measured by us</span> — it missed more than
+  half of all toxic comments. Both DistilBERT runs (1 epoch and 3 epochs) are Regime B
+  (balanced 20k val); the TF-IDF + Logistic Regression recall above is Regime A (the large
+  imbalanced split). Recall on a balanced set and recall on a heavily imbalanced set are
+  different regimes, so this is not a like-for-like number — treat the DistilBERT-vs-RNN-family
+  comparison as a qualitative illustration of the imbalance-failure point, not a direct
+  metric.</div>
+
+  <h3>The drawback that remains</h3>
+  <div class="note"><b>Honest caveat.</b> Four limits stay with this model.
+  <b>(1) It is a compressed model</b> — 66M params, 6 layers — so it has a capacity ceiling.
+  <b>(2) Mild overfitting at 3 epochs</b>: training to 3 epochs lowered training loss
+  (0.6075 &rarr; 0.4207) but raised validation loss (<b>0.537 &rarr; 0.818</b>) with no
+  accuracy gain, so about 1 epoch was near-optimal for this 100k subset.
+  <b>(3) It is a single model</b> — its errors have an irreducible variance that one model
+  cannot average away. <b>(4) Scope limits</b>: English, uncased, a 128-token cap, and
+  trained only on the balanced subset.</div>
+
+  <p>This points to two ways forward. Raise the capacity ceiling by scaling the model up
+  (Stage 3), and reduce single-model variance by combining several models (Stage 4).</p>
+</section>
+
+
+<section class="slide" id="stage3">
+  <div class="kicker">STAGE 3 · A BIGGER TRANSFORMER</div>
+  <h2>Stage 3 — Scaling up to a larger transformer</h2>
+
+  <p>
+    The next idea was to ask: what if we made the model bigger? In an early discussion this was
+    phrased as moving to a "DistilBERT large". We want to be honest about two things up front.
+  </p>
+
+  <div class="note">
+    <b>Honest caveat.</b> We did <b>not</b> run any larger-model experiment. There is no measured
+    number on this slide. Everything here is reasoning plus what other people have reported.
+    Treat every claim as <span class="tag t-lit">literature</span> or
+    <span class="tag t-proposed">proposed next step</span>, never as something we measured.
+  </div>
+
+  <h3>First, the naming</h3>
+  <p>
+    There is no official "DistilBERT-large". DistilBERT only ships as a base model (~66M params,
+    6 layers). DistilBERT is itself a <i>compressed</i> version of BERT-base. So the real way to
+    add capacity is to <b>undo the compression</b> and use a full-size encoder instead:
+  </p>
+  <table class="data">
+    <thead>
+      <tr><th>Encoder</th><th>Params</th><th>Layers</th><th>Heads</th><th>Hidden dim</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>DistilBERT-base (what we used)</td><td>~66.96M</td><td>6</td><td>12</td><td>768</td><td><span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>BERT-base</td><td>110M</td><td>12</td><td>12</td><td>768</td><td><span class="tag t-proposed">proposed next step</span></td></tr>
+      <tr><td>BERT-large</td><td>~340M</td><td>24</td><td>16</td><td>1024</td><td><span class="tag t-proposed">proposed next step</span></td></tr>
+    </tbody>
+  </table>
+
+  <h3>Why a bigger model should help — bias-variance reasoning</h3>
+  <p>
+    A model's expected error can be split into three parts. This is standard theory, not a
+    measurement.
+  </p>
+  <div class="math">
+    Expected error = bias&sup2; + variance + irreducible noise
+    <br><br>
+    bias&sup2;&nbsp;&rarr;&nbsp;how far the model class is from the true function (too simple = high bias)
+    <br>
+    variance&nbsp;&rarr;&nbsp;how much the fit changes with a different training sample
+    <br>
+    noise&nbsp;&rarr;&nbsp;label / data randomness we cannot remove
+  </div>
+  <p>
+    A larger encoder has more capacity, so it can fit the true function more closely. That lowers
+    <b>bias</b>. This is the reason fine-tuned transformers were the best <i>single</i> models in
+    the Jigsaw competition <span class="tag t-lit">literature</span>.
+  </p>
+
+  <div class="cols">
+    <div class="col">
+      <h4>What we gain</h4>
+      <ul>
+        <li>Lower bias — more capacity to fit the true function.</li>
+        <li>Best single-model behaviour, matching the Jigsaw result <span class="tag t-lit">literature</span>.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4>What we pay</h4>
+      <ul>
+        <li>Higher variance / overfitting risk on a small balanced set (ours was 100,000 rows).</li>
+        <li>Much more compute and memory (BERT-large is ~340M vs ~66.96M).</li>
+        <li>Diminishing returns — each size step buys less.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="figure" id="fig-bias-variance">
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="590" viewBox="0 0 1000 590" font-family="-apple-system, Helvetica, Arial, sans-serif">
+<rect x="1" y="1" width="998" height="588" rx="16" fill="#f6f8fc" stroke="#ccd4e0"/>
+<text x="40" y="46" fill="#1b1f27" font-size="21" font-weight="700">Why a bigger model is not automatically better</text>
+<text x="40" y="70" fill="#5a6473" font-size="12.5">Illustrative (standard bias-variance theory) &#8212; not our measurements.</text>
+<line x1="110" y1="470" x2="900" y2="470" stroke="#5a6473" stroke-width="1.5"/>
+<line x1="110" y1="95" x2="110" y2="470" stroke="#5a6473" stroke-width="1.5"/>
+<text x="505" y="524" fill="#1b1f27" font-size="13.5" text-anchor="middle">model capacity  (LSTM &#8594; DistilBERT &#8594; BERT-large)  &#8594;</text>
+<text x="34" y="282" fill="#1b1f27" font-size="13.5" text-anchor="middle" transform="rotate(-90 34 282)">expected error &#8594;</text>
+<line x1="465.5" y1="95" x2="465.5" y2="470" stroke="#0e9266" stroke-width="1.5" stroke-dasharray="4 4"/>
+<text x="465.5" y="89" fill="#0e9266" font-size="12" text-anchor="middle">best capacity</text>
+<text x="180" y="462" fill="#5a6473" font-size="12">underfitting</text>
+<text x="830" y="462" fill="#5a6473" font-size="12" text-anchor="end">overfitting</text>
+<polyline points="110.0,147.9 123.2,163.0 136.3,177.3 149.5,191.0 162.7,203.9 175.8,216.3 189.0,228.0 202.2,239.1 215.3,249.8 228.5,259.9 241.7,269.5 254.8,278.6 268.0,287.3 281.2,295.5 294.3,303.4 307.5,310.9 320.7,318.0 333.8,324.8 347.0,331.2 360.2,337.3 373.3,343.2 386.5,348.7 399.7,354.0 412.8,359.0 426.0,363.7 439.2,368.3 452.3,372.6 465.5,376.7 478.7,380.6 491.8,384.3 505.0,387.9 518.2,391.2 531.3,394.4 544.5,397.5 557.7,400.3 570.8,403.1 584.0,405.7 597.2,408.2 610.3,410.6 623.5,412.8 636.7,415.0 649.8,417.0 663.0,418.9 676.2,420.8 689.3,422.5 702.5,424.2 715.7,425.8 728.8,427.3 742.0,428.7 755.2,430.1 768.3,431.4 781.5,432.7 794.7,433.8 807.8,434.9 821.0,436.0 834.2,437.0 847.3,438.0 860.5,438.9 873.7,439.8 886.8,440.6 900.0,441.4" fill="none" stroke="#2f5fe0" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="110.0,447.9 123.2,447.9 136.3,447.6 149.5,447.3 162.7,446.8 175.8,446.1 189.0,445.3 202.2,444.3 215.3,443.2 228.5,442.0 241.7,440.6 254.8,439.0 268.0,437.4 281.2,435.5 294.3,433.5 307.5,431.4 320.7,429.1 333.8,426.7 347.0,424.1 360.2,421.4 373.3,418.5 386.5,415.5 399.7,412.4 412.8,409.0 426.0,405.6 439.2,402.0 452.3,398.2 465.5,394.3 478.7,390.3 491.8,386.1 505.0,381.8 518.2,377.3 531.3,372.6 544.5,367.9 557.7,362.9 570.8,357.9 584.0,352.6 597.2,347.3 610.3,341.8 623.5,336.1 636.7,330.3 649.8,324.3 663.0,318.2 676.2,312.0 689.3,305.6 702.5,299.0 715.7,292.4 728.8,285.5 742.0,278.5 755.2,271.4 768.3,264.1 781.5,256.7 794.7,249.1 807.8,241.4 821.0,233.5 834.2,225.5 847.3,217.4 860.5,209.0 873.7,200.6 886.8,192.0 900.0,183.2" fill="none" stroke="#a96a09" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="110.0,125.9 123.2,140.9 136.3,155.0 149.5,168.2 162.7,180.7 175.8,192.4 189.0,203.3 202.2,213.5 215.3,223.0 228.5,231.8 241.7,240.0 254.8,247.6 268.0,254.6 281.2,261.1 294.3,266.9 307.5,272.3 320.7,277.1 333.8,281.5 347.0,285.3 360.2,288.7 373.3,291.7 386.5,294.2 399.7,296.3 412.8,298.0 426.0,299.3 439.2,300.3 452.3,300.8 465.5,301.0 478.7,300.9 491.8,300.4 505.0,299.6 518.2,298.5 531.3,297.1 544.5,295.3 557.7,293.3 570.8,291.0 584.0,288.4 597.2,285.5 610.3,282.3 623.5,278.9 636.7,275.3 649.8,271.3 663.0,267.2 676.2,262.8 689.3,258.1 702.5,253.3 715.7,248.2 728.8,242.8 742.0,237.3 755.2,231.5 768.3,225.5 781.5,219.3 794.7,212.9 807.8,206.3 821.0,199.5 834.2,192.5 847.3,185.3 860.5,177.9 873.7,170.4 886.8,162.6 900.0,154.6" fill="none" stroke="#1b1f27" stroke-width="3.4" stroke-linejoin="round"/>
+<text x="599.8" y="400.7" fill="#2f5fe0" font-size="13" font-weight="600">bias&#178; (drops as model grows)</text>
+<text x="742.0" y="282.5" fill="#a96a09" font-size="13" font-weight="600" text-anchor="end">variance (rises)</text>
+<text x="157.4" y="165.8" fill="#1b1f27" font-size="13" font-weight="700">total error</text>
+<circle cx="347.0" cy="285.3" r="6" fill="#0e9266" stroke="#ffffff" stroke-width="2"/>
+<text x="359.0" y="273.3" fill="#0e9266" font-size="12.5" font-weight="600" text-anchor="start">DistilBERT (small)</text>
+<circle cx="678.8" cy="261.9" r="6" fill="#6a3fc0" stroke="#ffffff" stroke-width="2"/>
+<text x="666.8" y="249.9" fill="#6a3fc0" font-size="12.5" font-weight="600" text-anchor="end">BERT-large (more capacity)</text>
+<text x="505" y="564" fill="#5a6473" font-size="12" text-anchor="middle">A single larger encoder moves right: it lowers bias but adds variance &#8212; so it raises the ceiling, it does not remove single-model error.</text>
+</svg>
+
+    <figcaption>Figure 4 — Bias&ndash;variance trade-off: a bigger encoder lowers bias but raises variance (illustrative).</figcaption>
+  </div>
+
+  <p>
+    We have a real reason to worry about the variance side. Our 3-epoch DistilBERT run already
+    showed mild overfitting: training loss fell (0.6075 &rarr; 0.4207) while validation loss rose
+    (0.537 &rarr; 0.818) with no accuracy gain <span class="tag t-measured">measured by us</span>.
+    A larger model on the same small set would likely overfit sooner, not later.
+  </p>
+
+  <div class="note">
+    <b>Honest punchline.</b> A single bigger model raises the ceiling, but it does <b>not</b>
+    remove single-model variance or correlated errors — one model still makes the same kind of
+    mistakes every time. In the Jigsaw competition no top team relied on one model; the best
+    teams averaged several diverse models <span class="tag t-lit">literature</span>. That is what
+    Stage 4 looks at.
+  </div>
+
+  <div class="keypoint">
+    <b>Takeaway.</b> Going bigger (BERT-base 110M or BERT-large ~340M) is the honest way to add
+    capacity, and it would lower bias — but it costs far more compute and does not fix the
+    variance problem. So the more useful next step is not "one bigger model", it is "several
+    diverse models averaged together".
+  </div>
+</section>
+
+
+<section class="slide" id="stage4">
+  <div class="kicker">STAGE 4 · ENSEMBLE BY SIMPLE AVERAGING</div>
+  <h2>Stage 4 — Ensemble learning by simple averaging</h2>
+
+  <p>This is the technique we are bringing in now. The idea is short: train several <b>different</b>
+  models, then average their predicted probabilities. This is called a <b>simple average</b> ensemble —
+  no weights to tune, no extra model on top, just the mean of each model's P(toxic).</p>
+
+  <div class="figure" id="fig-ensemble">
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720" font-family="-apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#5a6473"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#2f5fe0"/>
+    </marker>
+  </defs>
+
+  <!-- page background -->
+  <rect x="0" y="0" width="1100" height="720" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="40" y="44" fill="#1b1f27" font-size="23" font-weight="bold">The modelling journey, ending in a simple-average ensemble</text>
+  <text x="40" y="68" fill="#5a6473" font-size="13">Each box shows its real headline number. English Jigsaw track. Two regimes are not directly comparable.</text>
+
+  <!-- ===================== TOP: journey ===================== -->
+  <text x="40" y="104" fill="#5a6473" font-size="13" font-weight="bold">JOURNEY (left to right)</text>
+
+  <!-- Stage 1: TF-IDF + LogReg (measured, green) -->
+  <rect x="40" y="120" width="178" height="92" rx="10" fill="#f6f8fc" stroke="#0e9266" stroke-width="2"/>
+  <text x="129" y="143" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">TF-IDF + LogReg</text>
+  <text x="129" y="162" fill="#5a6473" font-size="11" text-anchor="middle">bag-of-words</text>
+  <text x="129" y="182" fill="#0e9266" font-size="12" text-anchor="middle">bias-AUC 0.9061</text>
+  <text x="129" y="199" fill="#5a6473" font-size="11" text-anchor="middle">toxic recall ~0.448</text>
+
+  <!-- arrow 1->2 -->
+  <line x1="218" y1="166" x2="252" y2="166" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Stage 2: RNN family (measured, green) -->
+  <rect x="254" y="120" width="190" height="92" rx="10" fill="#f6f8fc" stroke="#0e9266" stroke-width="2"/>
+  <text x="349" y="142" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">LSTM / BiLSTM /</text>
+  <text x="349" y="159" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">BiGRU + Attn</text>
+  <text x="349" y="179" fill="#0e9266" font-size="12" text-anchor="middle">bias-AUC 0.8927</text>
+  <text x="349" y="196" fill="#0e9266" font-size="12" text-anchor="middle">-&gt; 0.9190</text>
+
+  <!-- arrow 2->3 -->
+  <line x1="444" y1="166" x2="478" y2="166" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Stage 3: DistilBERT (measured, blue) -->
+  <rect x="480" y="120" width="190" height="92" rx="10" fill="#f6f8fc" stroke="#2f5fe0" stroke-width="2"/>
+  <text x="575" y="142" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">DistilBERT</text>
+  <text x="575" y="159" fill="#5a6473" font-size="11" text-anchor="middle">fine-tuned (6 layers)</text>
+  <text x="575" y="179" fill="#2f5fe0" font-size="12" text-anchor="middle">ROC-AUC 0.9515</text>
+  <text x="575" y="196" fill="#2f5fe0" font-size="12" text-anchor="middle">acc 0.8851</text>
+
+  <!-- arrow 3->4 -->
+  <line x1="670" y1="166" x2="704" y2="166" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Stage 4: Larger transformer (proposed, amber dashed) -->
+  <rect x="706" y="120" width="186" height="92" rx="10" fill="#e9edf5" stroke="#a96a09" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="799" y="142" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">Larger transformer</text>
+  <text x="799" y="159" fill="#5a6473" font-size="11" text-anchor="middle">BERT-large class</text>
+  <text x="799" y="179" fill="#a96a09" font-size="12" text-anchor="middle">not run by us</text>
+  <text x="799" y="196" fill="#5a6473" font-size="11" text-anchor="middle">raises capacity ceiling</text>
+
+  <!-- arrow 4->5 -->
+  <line x1="892" y1="166" x2="926" y2="166" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- Stage 5: ENSEMBLE (proposed, amber dashed) -->
+  <rect x="928" y="120" width="132" height="92" rx="10" fill="#e9edf5" stroke="#a96a09" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="994" y="160" fill="#a96a09" font-size="15" font-weight="bold" text-anchor="middle">ENSEMBLE</text>
+  <text x="994" y="183" fill="#5a6473" font-size="11" text-anchor="middle">proposed</text>
+
+  <!-- divider -->
+  <line x1="40" y1="246" x2="1060" y2="246" stroke="#ccd4e0" stroke-width="1"/>
+
+  <!-- ===================== BOTTOM: ensemble architecture ===================== -->
+  <text x="40" y="278" fill="#5a6473" font-size="13" font-weight="bold">ENSEMBLE ARCHITECTURE (simple average of three diverse base models)</text>
+
+  <!-- input -->
+  <rect x="40" y="380" width="120" height="56" rx="10" fill="#f6f8fc" stroke="#ccd4e0" stroke-width="2"/>
+  <text x="100" y="404" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">comment</text>
+  <text x="100" y="422" fill="#5a6473" font-size="11" text-anchor="middle">input text</text>
+
+  <!-- Base model 1: RNN (measured, green) -->
+  <rect x="220" y="300" width="200" height="64" rx="10" fill="#f6f8fc" stroke="#0e9266" stroke-width="2"/>
+  <text x="320" y="325" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">RNN (BiGRU + Attn)</text>
+  <text x="320" y="345" fill="#5a6473" font-size="11" text-anchor="middle">measured single model</text>
+  <text x="438" y="338" fill="#0e9266" font-size="13" font-weight="bold" text-anchor="middle">p1</text>
+
+  <!-- Base model 2: DistilBERT (measured, blue) -->
+  <rect x="220" y="380" width="200" height="64" rx="10" fill="#f6f8fc" stroke="#2f5fe0" stroke-width="2"/>
+  <text x="320" y="405" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">DistilBERT</text>
+  <text x="320" y="425" fill="#5a6473" font-size="11" text-anchor="middle">measured single model</text>
+  <text x="438" y="418" fill="#2f5fe0" font-size="13" font-weight="bold" text-anchor="middle">p2</text>
+
+  <!-- Base model 3: Larger transformer (proposed, amber dashed) -->
+  <rect x="220" y="460" width="200" height="64" rx="10" fill="#e9edf5" stroke="#a96a09" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="320" y="485" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">Larger transformer</text>
+  <text x="320" y="505" fill="#a96a09" font-size="11" text-anchor="middle">proposed, not run by us</text>
+  <text x="438" y="498" fill="#a96a09" font-size="13" font-weight="bold" text-anchor="middle">p3</text>
+
+  <!-- input -> three base models -->
+  <path d="M160,400 L188,400 L188,332 L218,332" fill="none" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="160" y1="408" x2="218" y2="412" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M160,418 L188,418 L188,492 L218,492" fill="none" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- p1,p2,p3 -> combiner -->
+  <path d="M456,332 L490,332 L490,392 L518,392" fill="none" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="456" y1="412" x2="518" y2="412" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M456,492 L490,492 L490,432 L518,432" fill="none" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- combiner (proposed, amber dashed) -->
+  <rect x="520" y="372" width="216" height="80" rx="10" fill="#e9edf5" stroke="#a96a09" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="628" y="398" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">Simple average</text>
+  <text x="628" y="420" fill="#a96a09" font-size="14" font-weight="bold" text-anchor="middle">P = (p1 + p2 + p3) / 3</text>
+  <text x="628" y="440" fill="#5a6473" font-size="11" text-anchor="middle">equal-weight mean of probabilities</text>
+
+  <!-- combiner -> P(toxic) -->
+  <line x1="736" y1="412" x2="772" y2="412" stroke="#2f5fe0" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+
+  <!-- P(toxic) -->
+  <rect x="774" y="384" width="118" height="56" rx="10" fill="#f6f8fc" stroke="#2f5fe0" stroke-width="2"/>
+  <text x="833" y="409" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">P(toxic)</text>
+  <text x="833" y="427" fill="#5a6473" font-size="11" text-anchor="middle">[0, 1]</text>
+
+  <!-- P(toxic) -> threshold -->
+  <line x1="892" y1="412" x2="928" y2="412" stroke="#5a6473" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <!-- threshold -> label -->
+  <rect x="930" y="372" width="130" height="80" rx="10" fill="#f6f8fc" stroke="#ccd4e0" stroke-width="2"/>
+  <text x="995" y="396" fill="#1b1f27" font-size="13" font-weight="bold" text-anchor="middle">threshold</text>
+  <text x="995" y="414" fill="#5a6473" font-size="11" text-anchor="middle">P &gt;= 0.5 ?</text>
+  <text x="995" y="436" fill="#0e9b8c" font-size="12" text-anchor="middle">label: toxic / not</text>
+
+  <!-- combiner annotation: the key idea (violet, literature/ensemble idea) -->
+  <rect x="520" y="478" width="540" height="100" rx="10" fill="#f6f8fc" stroke="#6a3fc0" stroke-width="1.5"/>
+  <text x="536" y="500" fill="#6a3fc0" font-size="12" font-weight="bold">Why average diverse models?</text>
+  <text x="536" y="520" fill="#1b1f27" font-size="12">Diverse architectures make different mistakes -&gt; low error correlation.</text>
+  <text x="536" y="540" fill="#1b1f27" font-size="12">With pairwise correlation rho and per-model variance sigma^2, the average has</text>
+  <text x="536" y="560" fill="#1b1f27" font-size="12">the same bias but variance:</text>
+  <text x="536" y="571" fill="#6a3fc0" font-size="13" font-weight="bold">  Var(avg) = rho*sigma^2 + (1 - rho)*sigma^2 / K</text>
+
+  <!-- supporting note: source of the idea (violet) -->
+  <rect x="40" y="560" width="450" height="100" rx="10" fill="#f6f8fc" stroke="#6a3fc0" stroke-width="1.5"/>
+  <text x="56" y="582" fill="#6a3fc0" font-size="12" font-weight="bold">Where this comes from</text>
+  <text x="56" y="602" fill="#1b1f27" font-size="12">Kaggle 8th place (Qishen Ha, 2019): four diverse models</text>
+  <text x="56" y="620" fill="#1b1f27" font-size="12">combined by simple averaging of probabilities.</text>
+  <text x="56" y="640" fill="#5a6473" font-size="11">Ensemble theory: Krogh and Vedelsby, 1995. We have RNN</text>
+  <text x="56" y="656" fill="#5a6473" font-size="11">family + DistilBERT already; ensemble itself is proposed.</text>
+
+  <!-- ===================== legend ===================== -->
+  <rect x="520" y="592" width="540" height="68" rx="10" fill="#f6f8fc" stroke="#ccd4e0" stroke-width="1.5"/>
+  <text x="536" y="613" fill="#5a6473" font-size="12" font-weight="bold">Legend</text>
+
+  <rect x="536" y="624" width="26" height="16" rx="4" fill="#f6f8fc" stroke="#0e9266" stroke-width="2"/>
+  <text x="570" y="637" fill="#1b1f27" font-size="12">solid green = measured by us</text>
+
+  <rect x="536" y="644" width="26" height="16" rx="4" fill="#e9edf5" stroke="#a96a09" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="570" y="657" fill="#1b1f27" font-size="12">dashed amber = proposed next step</text>
+
+  <rect x="822" y="624" width="26" height="16" rx="4" fill="#f6f8fc" stroke="#2f5fe0" stroke-width="2"/>
+  <text x="856" y="637" fill="#1b1f27" font-size="12">solid blue = transformer (measured)</text>
+
+  <rect x="822" y="644" width="26" height="16" rx="4" fill="#f6f8fc" stroke="#6a3fc0" stroke-width="2"/>
+  <text x="856" y="657" fill="#1b1f27" font-size="12">violet = literature / ensemble idea</text>
+</svg>
+<figcaption>Figure 5 — the modelling journey and the simple-average ensemble.</figcaption></div>
+
+  <h3>Why it works — the maths</h3>
+  <p>The result below is standard ensemble theory, not something we measured. We follow Krogh
+  &amp; Vedelsby (1995). <span class="tag t-lit">literature</span></p>
+
+  <div class="math">
+    Setup: K models, each with the SAME bias and error variance &sigma;&sup2;.<br>
+    The simple average is&nbsp; f&#772; = (1/K) &times; &Sigma; f<sub>i</sub>.<br>
+    <br>
+    Case 1 — independent errors:<br>
+    &nbsp;&nbsp;bias( f&#772; ) = bias( f<sub>i</sub> )&nbsp;&nbsp;(unchanged)<br>
+    &nbsp;&nbsp;Var( f&#772; ) = &sigma;&sup2; / K&nbsp;&nbsp;&rarr; variance shrinks, bias does not grow.<br>
+    <br>
+    Case 2 — errors with pairwise correlation &rho;:<br>
+    &nbsp;&nbsp;Var( f&#772; ) = &rho;&sigma;&sup2; + (1 &minus; &rho;)&sigma;&sup2; / K<br>
+    &nbsp;&nbsp;As K &rarr; &infin;, &nbsp; Var( f&#772; ) &rarr; &rho;&sigma;&sup2;.<br>
+    <br>
+    &rArr; the floor is set by &rho;. Adding more copies of one model (high &rho;) buys little;
+    the gain comes from LOW correlation, i.e. DIVERSITY.<br>
+    <br>
+    Ambiguity decomposition (Krogh &amp; Vedelsby):<br>
+    &nbsp;&nbsp;ensemble error = (mean individual error) &minus; (mean ambiguity / diversity)<br>
+    &nbsp;&nbsp;ambiguity &ge; 0 &rArr; ensemble error &le; mean individual error.<br>
+    &nbsp;&nbsp;(For a convex loss this also follows from Jensen&apos;s inequality:
+    loss(mean of predictions) &le; mean of loss(predictions).)
+  </div>
+
+  <div class="keypoint"><b>Takeaway.</b> Averaging cuts variance without adding bias, and the benefit
+  scales with how <i>uncorrelated</i> the models' errors are. So you average <b>diverse
+  architectures</b> — a transformer, a larger transformer, and an RNN — not several copies of the
+  same model.</div>
+
+  <h3>Evidence — what the Jigsaw competition actually did</h3>
+  <p>The same Jigsaw "Unintended Bias" task we used for the English track was a Kaggle competition,
+  so we can look at what the top teams did. <span class="tag t-lit">literature</span></p>
+  <ul>
+    <li>Qishen Ha's <b>8th-place</b> solution was titled "8th Place Solution (4 models simple avg)" —
+    literally <b>four diverse models combined by simple averaging</b> of predicted probabilities.
+    (We have the public title and competition write-ups; we do not have the four exact architectures,
+    so we say "four diverse models" and do not name them.)</li>
+    <li>The competition consensus was that a fine-tuned <b>BERT was the best single model</b>, but
+    <b>every top team ensembled diverse models</b> — BERT-base, BERT-large, GPT-2, and LSTM-based
+    models — by averaging or weighted-averaging (e.g. the 2nd-place "power 3.5 weighted sum").
+    No top team relied on a single model.</li>
+    <li>To handle the bias metric and the imbalance, teams also used <b>sample weighting</b> (up-weight
+    toxic + identity examples; target weight &times; log(annotator_count + 2)) and <b>negative
+    down-sampling</b> (drop 50% of negatives after epoch 1).</li>
+  </ul>
+
+  <h3>Multi-sample dropout — a mini-ensemble inside one model</h3>
+  <p>Inoue (2019, arXiv:1905.09788) gives a cheaper, related trick that lives <i>inside</i> a single
+  model. <span class="tag t-lit">literature</span></p>
+  <ul>
+    <li>Within ONE training iteration, draw <b>k different dropout masks</b> and push the input through
+    each. The duplicated layers <b>share weights</b>, so there are no extra parameters.</li>
+    <li>Average the per-sample losses across the k masks and back-propagate that.</li>
+    <li>Effect: faster convergence and better generalisation at almost no extra cost — an
+    <b>intra-model mini-ensemble</b>. (We describe the mechanism only; we do not quote the paper's
+    exact error-reduction numbers, which we have not verified.)</li>
+  </ul>
+
+  <h3>Our concrete plan</h3>
+  <p>We already have two of the three ingredients: the <b>RNN family</b> (Stage 1) and the
+  <b>fine-tuned DistilBERT</b> (Stage 3). The plan is to add a <b>larger transformer</b> (Stage 2's
+  proposed step) and then average the three models' P(toxic). <span class="tag t-proposed">proposed next step</span></p>
+
+  <p>These are our real single-model starting points, kept in their own regimes (they are not
+  directly comparable):</p>
+  <table class="data">
+    <thead>
+      <tr><th>Model (already have)</th><th>Regime</th><th>Best single-model score</th><th>Tag</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>BiGRU-Conv1D + Attention (best RNN)</td><td>A — RNN-family, bias-aware AUC</td><td>Bias-AUC 0.9190</td><td><span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>DistilBERT fine-tuned (3-epoch saved model)</td><td>B — balanced 20k val</td><td>Acc 0.8851 · F1 0.887 · ROC-AUC 0.9515</td><td><span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>Larger transformer (e.g. BERT-base / BERT-large)</td><td>—</td><td>not measured</td><td><span class="tag t-proposed">proposed next step</span></td></tr>
+    </tbody>
+  </table>
+
+  <p>What we expect from the maths above plus the proven Kaggle result: averaging three diverse,
+  low-correlation models should lower variance and reduce error below the best single model, with the
+  same bias. That is the prediction <span class="tag t-proposed">proposed next step</span> — the theory
+  and the literature point to a gain, and our single-model numbers are the honest baseline we would
+  measure against.</p>
+
+  <div class="note"><b>Honest caveat.</b> We are <b>not</b> reporting a measured ensemble score. No
+  ensemble has been run yet, so there is no number to give — that is the next experiment. We also have
+  <b>no public per-model score from Qishen Ha's solution</b> to cite. Everything in this section is
+  either standard theory or published competition practice, clearly labelled; the only measured numbers
+  here are our existing single-model results.</div>
+</section>
+
+
+<section class="slide" id="final">
+  <div class="kicker">THE FINAL ENGLISH MODEL · CAPABILITIES &amp; LIMITS</div>
+  <h2>The final model — what it does and where it stops</h2>
+
+  <p>This is the saved English model: a fine-tuned DistilBERT classifier, served end to end.
+  It is one model behind one API, used by three clients. Below is an honest split of what it
+  can do and what it cannot.</p>
+
+  <h3>What it can do</h3>
+  <div class="cards">
+    <div class="card">
+      <h4>Contextual transformer</h4>
+      <p>Six transformer blocks read the whole sentence at once, so the same word is read
+      differently depending on its context — unlike the fixed word vectors used by the RNNs.</p>
+    </div>
+    <div class="card">
+      <h4>Measured accuracy</h4>
+      <p>On the balanced 20k validation set: accuracy <b>0.8851</b>, F1 (toxic) <b>0.887</b>,
+      ROC-AUC <b>0.9515</b>. <span class="tag t-measured">measured by us</span></p>
+    </div>
+    <div class="card">
+      <h4>Catches most toxic comments</h4>
+      <p>Toxic recall <b>0.899</b> — it misses about one in ten toxic comments, far better than
+      the simple high-accuracy models that miss over half.
+      <span class="tag t-measured">measured by us</span></p>
+    </div>
+    <div class="card">
+      <h4>Served end to end</h4>
+      <p>A FastAPI service runs the model, with a fallback chain (real model &rarr; LLM via
+      gateway &rarr; keyword heuristic) so a live demo never hard-crashes.</p>
+    </div>
+    <div class="card">
+      <h4>One contract, three clients</h4>
+      <p>A React website, a Chrome extension (X / YouTube / Instagram), and an Expo mobile shell
+      all speak the same API contract.</p>
+    </div>
+    <div class="card">
+      <h4>Explanations + a tunable threshold</h4>
+      <p>Per-category scores and word-level explanations (occlusion), plus a decision threshold
+      a moderator can move to trade precision against recall.</p>
+    </div>
+  </div>
+
+  <h3>Where it stops</h3>
+  <ul>
+    <li><b>English-only and uncased.</b> The tokenizer lowercases input, so it loses signal from
+    SHOUTING in all caps. <span class="tag t-measured">measured by us</span></li>
+    <li><b>Short inputs only.</b> Hard cap of <b>128</b> tokens; longer comments are truncated.
+    <span class="tag t-measured">measured by us</span></li>
+    <li><b>Trained on a subset, not the full corpus.</b> A balanced down-sample of <b>100,000</b>
+    comments (50k per class), not all <b>1,804,871</b>. <span class="tag t-measured">measured by us</span></li>
+    <li><b>Binary head only.</b> It outputs toxic / non-toxic; it does not name the toxicity type
+    from this head.</li>
+    <li><b>Mild overfitting past one epoch.</b> Three epochs lowered training loss but raised
+    validation loss (<b>0.537 &rarr; 0.818</b>) with no accuracy gain, so ~1 epoch was near-optimal
+    for this subset. <span class="tag t-measured">measured by us</span></li>
+    <li><b>Identity bias not yet mitigated.</b> The dataset's identity columns make bias
+    measurable, but we have <b>not measured</b> or corrected it here.</li>
+    <li><b>It is a single model.</b> One model carries single-model variance and correlated errors
+    — exactly what the averaging step (Stage 4) is meant to cut.
+    <span class="tag t-proposed">proposed next step</span></li>
+  </ul>
+
+  <div class="keypoint"><b>Takeaway.</b> A solid, honest single classifier — 0.8851 accuracy,
+  0.887 F1, 0.9515 ROC-AUC, ~0.90 toxic recall — that works end to end across three clients. Its
+  main open weaknesses are English-only / uncased input, unmitigated identity bias, and being a
+  single model.</div>
+
+  <div class="note"><b>Honest caveat.</b> These numbers are for the English DistilBERT track only.
+  They are <i>not</i> a baseline for the Hindi RAVEN-X work, which is a different language, task,
+  and label scheme.</div>
+</section>
+
+
+<section class="slide" id="ravenx">
+  <div class="kicker">OUR ORIGINAL METHOD · LOW-RESOURCE HINDI</div>
+  <h2>RAVEN-X — our original contribution (Hindi, cross-script rationale transfer)</h2>
+
+  <h3>Why we re-scoped the project</h3>
+  <p>
+    Our supervisor, Dr. Arpita Dutta, is second author of the survey "A Survey on Automatic Online
+    Hate Speech Detection in Low-Resource Languages" (arXiv:2411.19017). That survey points to
+    low-resource and code-mixed Hindi-English as the open gap. Building another English Jigsaw
+    model is a reproduction, not a contribution. So she asked us to propose our own method in
+    low-resource Hindi instead. RAVEN-X is that method.
+  </p>
+
+  <h3>Data truth — what we actually measured on disk</h3>
+  <p>
+    We checked the HASOC-2019 Hindi file ourselves (4,665 rows). It is native-script Hindi, not
+    romanized Hinglish:
+    <span class="tag t-measured">measured by us</span>
+    <b>82.5%</b> of script characters are Devanagari; 74.9% of posts
+    are Devanagari-dominant and only 7.3% are Latin-dominant. This matters for the method: a
+    Devanagari slur and its English equivalent share <b>zero</b> subword tokens. So any transfer
+    from English to Hindi cannot ride on shared spelling. It has to pass through MuRIL's shared
+    meaning space, purely as representation.
+  </p>
+  <p>
+    The official gold test set is blind, so we cannot use it. We froze a stratified split with
+    seed=42 and report on it: <span class="tag t-measured">train 3,265 / val 699 / test 701</span>.
+  </p>
+
+  <h3>The method</h3>
+  <p>
+    One shared <b>MuRIL-base</b> encoder (12 layers, 768-d, ~236M params) feeds two heads:
+  </p>
+  <div class="cards">
+    <div class="card">
+      <h4>CLASSIFY head</h4>
+      <p>Toxic / not toxic. Supervised on Hindi HASOC and English data together.</p>
+    </div>
+    <div class="card">
+      <h4>RATIONALE head</h4>
+      <p>Which words are toxic. 768&rarr;256&rarr;1 per word. Supervised <b>only</b> on English
+      HateXplain — never on Hindi.</p>
+    </div>
+  </div>
+  <p>
+    The two heads are tied together by a <b>per-head-masked multi-task loss</b>: each loss term
+    applies only where its label exists, so we never train on a missing label. On top of that we
+    add a <b>label-free faithfulness self-objective</b> on Hindi — comprehensiveness and
+    sufficiency, measured by masking words at the attention level and re-running the full encoder.
+    Each batch of 16 is mixed: 8 HASOC-Hindi + 8 HateXplain-English. AdamW, discriminative learning
+    rates (2e-5 encoder / 1e-4 heads), max_len 128, fp16, on a T4 GPU.
+  </p>
+
+  <div class="figure" id="fig-ravenx">
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="1020" viewBox="0 0 820 1020" font-family="-apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5a6473"/>
+    </marker>
+    <marker id="arrowV" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#6a3fc0"/>
+    </marker>
+  </defs>
+
+  <!-- page bg -->
+  <rect x="0" y="0" width="820" height="1020" fill="#ffffff"/>
+
+  <!-- title -->
+  <text x="410" y="38" text-anchor="middle" fill="#1b1f27" font-size="23" font-weight="bold">RAVEN-X architecture</text>
+  <text x="410" y="60" text-anchor="middle" fill="#5a6473" font-size="13">One shared encoder, two heads. Cross-script rationale transfer for Hindi.</text>
+
+  <!-- 1) mixed batch -->
+  <rect x="120" y="80" width="580" height="56" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="410" y="106" text-anchor="middle" fill="#1b1f27" font-size="14" font-weight="bold">MIXED BATCH (16)</text>
+  <text x="410" y="124" text-anchor="middle" fill="#5a6473" font-size="12.5">8 HASOC-Hindi (Devanagari) + 8 HateXplain-English (Latin)</text>
+
+  <line x1="410" y1="136" x2="410" y2="160" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- 2) tokenizer -->
+  <rect x="160" y="160" width="500" height="50" rx="10" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="410" y="182" text-anchor="middle" fill="#1b1f27" font-size="14" font-weight="bold">One MuRIL tokenizer + unified preprocessing</text>
+  <text x="410" y="200" text-anchor="middle" fill="#5a6473" font-size="12">max_len 128</text>
+
+  <line x1="410" y1="210" x2="410" y2="234" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- 3) shared encoder (central blue) -->
+  <rect x="120" y="234" width="580" height="96" rx="12" fill="#e9edf5" stroke="#2f5fe0" stroke-width="2.2"/>
+  <text x="410" y="262" text-anchor="middle" fill="#2f5fe0" font-size="16" font-weight="bold">SHARED ENCODER = MuRIL-base</text>
+  <text x="410" y="284" text-anchor="middle" fill="#1b1f27" font-size="13">12 layers, 768-d, ~236M params</text>
+  <text x="410" y="304" text-anchor="middle" fill="#5a6473" font-size="12.5">the only cross-language channel</text>
+  <text x="410" y="322" text-anchor="middle" fill="#5a6473" font-size="11.5">Devanagari slur and English equivalent share zero subword tokens — transfer is representational</text>
+
+  <!-- split: two arrows -->
+  <path d="M410,330 L410,348 L250,348 L250,372" fill="none" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <path d="M410,330 L410,348 L570,348 L570,372" fill="none" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- LEFT branch label: per-word vectors -->
+  <rect x="120" y="372" width="260" height="42" rx="9" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="250" y="398" text-anchor="middle" fill="#1b1f27" font-size="13">per-word vectors</text>
+
+  <!-- RIGHT branch label: sentence vector -->
+  <rect x="440" y="372" width="260" height="42" rx="9" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="570" y="398" text-anchor="middle" fill="#1b1f27" font-size="13">sentence vector ([CLS])</text>
+
+  <line x1="250" y1="414" x2="250" y2="436" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <line x1="570" y1="414" x2="570" y2="436" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- LEFT: HEAD 2 RATIONALE (violet novelty) -->
+  <rect x="100" y="436" width="300" height="104" rx="12" fill="#e9edf5" stroke="#6a3fc0" stroke-width="2.2"/>
+  <text x="250" y="460" text-anchor="middle" fill="#6a3fc0" font-size="14.5" font-weight="bold">HEAD 2: RATIONALE</text>
+  <text x="250" y="480" text-anchor="middle" fill="#1b1f27" font-size="12.5">which words are toxic</text>
+  <text x="250" y="498" text-anchor="middle" fill="#1b1f27" font-size="12.5">768 -&gt; 256 -&gt; 1 per word</text>
+  <text x="250" y="518" text-anchor="middle" fill="#5a6473" font-size="12">English-supervised ONLY</text>
+  <text x="250" y="534" text-anchor="middle" fill="#6a3fc0" font-size="11" font-weight="bold">the novelty</text>
+
+  <!-- RIGHT: HEAD 1 CLASSIFY -->
+  <rect x="420" y="436" width="300" height="104" rx="12" fill="#e9edf5" stroke="#2f5fe0" stroke-width="2"/>
+  <text x="570" y="460" text-anchor="middle" fill="#2f5fe0" font-size="14.5" font-weight="bold">HEAD 1: CLASSIFY</text>
+  <text x="570" y="480" text-anchor="middle" fill="#1b1f27" font-size="12.5">toxic / not</text>
+  <text x="570" y="498" text-anchor="middle" fill="#1b1f27" font-size="12.5">Hindi + English</text>
+
+  <!-- novelty note -->
+  <rect x="100" y="552" width="300" height="44" rx="9" fill="#f6f8fc" stroke="#6a3fc0" stroke-width="1.2"/>
+  <text x="250" y="571" text-anchor="middle" fill="#6a3fc0" font-size="11">English rationale labels -&gt; faithful Hindi</text>
+  <text x="250" y="587" text-anchor="middle" fill="#6a3fc0" font-size="11">highlights, with zero Hindi rationale labels</text>
+
+  <!-- arrows from heads into loss -->
+  <path d="M250,596 L250,624 L360,624 L360,646" fill="none" stroke="#6a3fc0" stroke-width="1.6" marker-end="url(#arrowV)"/>
+  <path d="M570,540 L570,624 L460,624 L460,646" fill="none" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- 5) per-head-masked loss -->
+  <rect x="100" y="646" width="620" height="138" rx="12" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="410" y="672" text-anchor="middle" fill="#1b1f27" font-size="15" font-weight="bold">PER-HEAD-MASKED LOSS</text>
+  <text x="410" y="690" text-anchor="middle" fill="#5a6473" font-size="11.5">each term applies only where its label exists — never trains on a missing label</text>
+  <text x="410" y="714" text-anchor="middle" fill="#0e9266" font-size="12.5">L_z (toxic, both languages)</text>
+  <text x="410" y="734" text-anchor="middle" fill="#6a3fc0" font-size="12.5">L_rat (words, English only)</text>
+  <text x="410" y="754" text-anchor="middle" fill="#0e9b8c" font-size="12.5">L_faith = comp + suff (Hindi, label-free)</text>
+
+  <line x1="410" y1="784" x2="410" y2="808" stroke="#5a6473" stroke-width="1.6" marker-end="url(#arrow)"/>
+
+  <!-- 6) serving -->
+  <rect x="120" y="808" width="580" height="74" rx="12" fill="#e9edf5" stroke="#0e9266" stroke-width="2"/>
+  <text x="410" y="834" text-anchor="middle" fill="#0e9266" font-size="15" font-weight="bold">SERVING</text>
+  <text x="410" y="854" text-anchor="middle" fill="#1b1f27" font-size="12.5">one forward pass = label + highlighted words</text>
+  <text x="410" y="872" text-anchor="middle" fill="#5a6473" font-size="12">(Raven API)</text>
+
+  <!-- measured results panel -->
+  <rect x="120" y="902" width="580" height="98" rx="12" fill="#f6f8fc" stroke="#ccd4e0"/>
+  <text x="138" y="924" fill="#1b1f27" font-size="12.5" font-weight="bold">Measured (first run, Colab T4, --fast, 3 epochs, seed 42)</text>
+  <text x="138" y="944" fill="#0e9266" font-size="12">MuRIL classify macro-F1 0.842 val (epoch 2)</text>
+  <text x="138" y="962" fill="#5a6473" font-size="11.5">vs TF-IDF+LogReg 0.787 val / 0.813 test  (+5.5 pts on same val split)</text>
+  <text x="138" y="982" fill="#6a3fc0" font-size="12">English rationale token-F1 0.653 -&gt; 0.679</text>
+  <text x="558" y="982" fill="#a96a09" font-size="11">Hindi transfer: not measured</text>
+</svg>
+<figcaption>Figure 6 — RAVEN-X: one MuRIL encoder, two heads, a masked multi-task loss.</figcaption></div>
+
+  <h3>Results from the first run</h3>
+  <p>
+    Colab T4, fast mode, 3 epochs, single seed (42). All numbers below are
+    <span class="tag t-measured">measured by us</span> on the frozen split.
+  </p>
+  <table class="data">
+    <thead>
+      <tr><th>Model</th><th>Macro-F1 (val)</th><th>Macro-F1 (test)</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TF-IDF (word+char) + LogReg baseline</td><td>0.787</td><td>0.813</td><td>classical baseline</td></tr>
+      <tr><td>MuRIL (RAVEN-X), epoch 2, faithfulness off</td><td><b>0.842</b></td><td>pending</td><td>+5.5 pts over baseline on the same val split</td></tr>
+    </tbody>
+  </table>
+  <table class="data">
+    <thead>
+      <tr><th>Other measured signals</th><th>Start</th><th>End</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>English rationale token-F1 (HateXplain)</td><td>0.653</td><td>0.679</td></tr>
+      <tr><td>Faithfulness trade-off (epoch 3): macro-F1 cost</td><td>0.842</td><td>0.802</td></tr>
+      <tr><td>Faithfulness trade-off (epoch 3): token-F1 gain</td><td>0.653</td><td>0.679</td></tr>
+    </tbody>
+  </table>
+  <p>
+    Turning the Hindi faithfulness objective on (epoch 3) traded classification macro-F1
+    (0.842 &rarr; 0.802) for a gain in rationale token-F1 (0.653 &rarr; 0.679). That is the
+    accuracy-versus-explainability tension the method pre-registered, and we measured it rather
+    than assumed it.
+  </p>
+
+  <h3>Why this is novel — and the honest negative-result framing</h3>
+  <p>
+    The novelty is the conjunction of three things at once: cross-script (English &rarr; Devanagari
+    Hindi), at the rationale level (word-by-word, not just a label), with zero target-language
+    rationale labels. We test whether explanation faithfulness survives the script boundary with a
+    label-free deletion test we built, not an assumption. If the answer turns out to be no — that
+    transfer does not survive crossing into Devanagari — that is still a rigorous negative result
+    the field does not currently have, and reporting it honestly is itself a contribution.
+  </p>
+
+  <div class="keypoint">
+    <b>Takeaway.</b> RAVEN-X is one MuRIL encoder with two heads and a masked multi-task loss. On
+    our frozen split it reached macro-F1 0.842 on validation, +5.5 points over the TF-IDF baseline
+    (0.787), and we directly measured the accuracy-versus-explainability trade-off the design
+    predicted.
+  </div>
+
+  <div class="note">
+    <b>Honest caveat.</b> This is a fast single-seed run; MuRIL validation was capped at 400
+    examples by the eval loop and the clean MuRIL test number is still pending. The headline result —
+    whether faithful explanations transfer across script into Devanagari — is the pending Week-4
+    measurement, not yet done. And the English DistilBERT 0.885 is <b>not</b> a baseline here: it is
+    a different language, task, label scheme, and class balance, so comparing the two would be a
+    category error. It served only as motivation.
+  </div>
+</section>
+
+
+<section class="slide" id="roadmap">
+  <div class="kicker">WHAT WE NEED NEXT · CONCRETE STEPS</div>
+  <h2>What we need next</h2>
+
+  <p>Here is the honest state of the work and the small set of things left to finish.
+  None of the numbers below are claimed as results yet. Each item is a planned step, with
+  the real single-model numbers we already have as the starting point.</p>
+
+  <div class="cols">
+    <div class="col">
+      <h3>English track</h3>
+      <ul>
+        <li><b>Train and average the ensemble.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Actually train three diverse models — our fine-tuned DistilBERT, a larger transformer
+          (e.g. BERT-base), and an RNN-family model — and combine them by simple averaging of
+          predicted probabilities. Then <i>measure</i> the gain. Our starting point is the real
+          DistilBERT 3-epoch number: accuracy <b>0.8851</b>, F1 (toxic) <b>0.887</b>, ROC-AUC
+          <b>0.9515</b>. The expected benefit comes from low error correlation across diverse
+          architectures, following the Qishen Ha 8th-place "4 models simple avg" result and the
+          standard variance-reduction theory; we will report only the measured ensemble score, not
+          a guessed one.</li>
+        <li><b>Add multi-sample dropout.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Within one training step, draw <i>k</i> dropout masks and average the per-sample losses
+          (Inoue, 2019). It is an intra-model mini-ensemble at almost no extra cost. We will measure
+          whether it improves convergence and validation loss on our split.</li>
+        <li><b>Add bias-aware sample weighting.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Up-weight toxic and identity examples (target weight scaled by log of annotator count),
+          as the top Jigsaw teams did, and report the Jigsaw bias-aware AUC alongside accuracy.</li>
+        <li><b>Report on one common split.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Right now the RNN family (large imbalanced split, bias-aware AUC) and DistilBERT
+          (balanced 20k val) are not directly comparable. We will re-evaluate the models on one
+          shared split so the numbers can sit in one table.</li>
+      </ul>
+    </div>
+
+    <div class="col">
+      <h3>RAVEN-X track</h3>
+      <ul>
+        <li><b>Full multi-seed run.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          The current MuRIL number (val macro-F1 <b>0.842</b>, epoch 2) is a single fast seed-42
+          run with the val loop capped at 400 examples. We will run 3–5 seeds and report
+          mean &plusmn; std on the full val set.</li>
+        <li><b>Script-stratified faithfulness on Devanagari.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          This is the headline that is <i>not yet measured</i>. We will measure comprehensiveness
+          and sufficiency of the rationales on the native Devanagari posts (82.5% of script
+          characters are Devanagari), since the rationale head is supervised only on English.
+          That tests whether explanation transfers across scripts with zero shared subwords.</li>
+        <li><b>Clean held-out test number.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Report MuRIL on the frozen test split (701 rows). The TF-IDF baseline is macro-F1
+          <b>0.813</b> test; the MuRIL test number is still pending.</li>
+        <li><b>Geometry probe.</b>
+          <span class="tag t-proposed">proposed next step</span>
+          Check, in MuRIL's shared embedding space, whether a Devanagari slur sits near its English
+          equivalent — evidence for why cross-script transfer can work at all.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Resources we need</h3>
+  <ul>
+    <li><b>A small amount of GPU time.</b>
+      <span class="tag t-proposed">proposed next step</span>
+      A free T4 is enough for the RAVEN-X multi-seed and faithfulness runs (the first run was on a
+      Colab T4). The English ensemble plus the larger transformer (BERT-base) needs a bit more
+      compute than a single T4.</li>
+    <li><b>Continued access to the gated Hindi datasets.</b>
+      <span class="tag t-proposed">proposed next step</span>
+      We need ongoing access to HASOC-2019 Hindi (4,665 rows) and HateXplain so we can finish the
+      multi-seed and cross-script evaluation.</li>
+  </ul>
+
+  <div class="keypoint"><b>Takeaway.</b> The remaining work is finishing and measuring, not
+  redesigning. For English: train and average the ensemble and report a gain over our real
+  DistilBERT numbers. For RAVEN-X: multi-seed runs, the Devanagari faithfulness headline, a clean
+  test number, and the geometry probe. The cost is modest — mostly a little GPU time and continued
+  dataset access.</div>
+
+  <div class="note"><b>Honest caveat.</b> Every figure above that is tagged as a next step is not a
+  result. The only measured numbers here are our existing single-model scores (DistilBERT 0.8851
+  accuracy; MuRIL 0.842 val macro-F1; TF-IDF 0.813 test macro-F1). The ensemble gain, the
+  multi-seed mean &plusmn; std, and the Devanagari faithfulness transfer are all still to be
+  measured.</div>
+</section>
+
+
+<section class="slide" id="references">
+  <div class="kicker">References</div>
+  <h2>What we built on</h2>
+  <ol class="refs">
+    <li><b>Jigsaw Unintended Bias in Toxicity Classification.</b> Kaggle / Conversation AI, 2019. Our dataset.</li>
+    <li><b>Qishen Ha.</b> &ldquo;8th Place Solution (4 models simple avg).&rdquo; Jigsaw competition write-up, Kaggle, 2019.
+      The simple-average ensemble we build the Stage&nbsp;4 argument on.</li>
+    <li><b>H. Inoue.</b> &ldquo;Multi-Sample Dropout for Accelerated Training and Better Generalization.&rdquo;
+      arXiv:1905.09788, 2019.</li>
+    <li><b>V. Sanh, L. Debut, J. Chaumond, T. Wolf.</b> &ldquo;DistilBERT, a distilled version of BERT: smaller,
+      faster, cheaper and lighter.&rdquo; 2019. The backbone we fine-tuned.</li>
+    <li><b>A. Vaswani et al.</b> &ldquo;Attention Is All You Need.&rdquo; NeurIPS, 2017. The transformer / self-attention.</li>
+    <li><b>G. Hinton, O. Vinyals, J. Dean.</b> &ldquo;Distilling the Knowledge in a Neural Network.&rdquo; 2015.
+      What knowledge distillation actually is.</li>
+    <li><b>S. Hochreiter, J. Schmidhuber.</b> &ldquo;Long Short-Term Memory.&rdquo; Neural Computation, 1997. The LSTM.</li>
+    <li><b>A. Krogh, J. Vedelsby.</b> &ldquo;Neural Network Ensembles, Cross Validation, and Active Learning.&rdquo;
+      NeurIPS, 1995. The ambiguity decomposition behind ensembling.</li>
+    <li><b>S. Khanuja et al.</b> &ldquo;MuRIL: Multilingual Representations for Indian Languages.&rdquo; 2021.
+      The RAVEN-X backbone.</li>
+    <li><b>B. Mathew et al.</b> &ldquo;HateXplain: A Benchmark Dataset for Explainable Hate Speech Detection.&rdquo;
+      AAAI, 2021. The English word-level rationales.</li>
+    <li><b>S. Das, A. Dutta, K. Roy, A. Mondal, A. Mukhopadhyay.</b> &ldquo;A Survey on Automatic Online Hate Speech
+      Detection in Low-Resource Languages.&rdquo; arXiv:2411.19017, 2024. The supervisor&rsquo;s survey that set the direction.</li>
+  </ol>
+  <div class="note" style="margin-top:14px">
+    <b>A note on honesty.</b> The RNN/classical results and the DistilBERT results were measured under two different
+    evaluation set-ups and are not directly comparable; the larger-transformer and the ensemble are reasoning plus
+    published results, not numbers we have run ourselves yet; and the English DistilBERT score is not a baseline for
+    the Hindi RAVEN-X work. These distinctions are marked throughout with
+    <span class="tag t-measured">measured</span> <span class="tag t-lit">literature</span>
+    <span class="tag t-proposed">proposed</span> tags.
+  </div>
+</section>
+
+</body></html>

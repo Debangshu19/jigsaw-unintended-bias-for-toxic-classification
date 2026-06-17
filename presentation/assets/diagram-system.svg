@@ -1,0 +1,129 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="720" viewBox="0 0 1100 720" font-family="-apple-system, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#97a1b2"/>
+    </marker>
+    <marker id="arrowblue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5b8cff"/>
+    </marker>
+  </defs>
+
+  <!-- page background -->
+  <rect x="0" y="0" width="1100" height="720" fill="#0b0d12"/>
+
+  <!-- title -->
+  <text x="40" y="44" fill="#e8eaf0" font-size="23" font-weight="bold">Raven system architecture: one model, one API, three clients</text>
+  <text x="40" y="68" fill="#97a1b2" font-size="13">Triages comments so a human moderator reads only the risky ones. English DistilBERT track.</text>
+
+  <!-- ===== training row ===== -->
+  <text x="40" y="108" fill="#97a1b2" font-size="12" font-weight="bold">TRAIN (offline)</text>
+
+  <!-- Jigsaw CSV -->
+  <rect x="40" y="120" width="190" height="92" rx="10" fill="#161a23" stroke="#2c3340"/>
+  <text x="135" y="148" fill="#e8eaf0" font-size="14" font-weight="bold" text-anchor="middle">Jigsaw CSV</text>
+  <text x="135" y="168" fill="#97a1b2" font-size="11" text-anchor="middle">Civil Comments corpus</text>
+  <text x="135" y="184" fill="#97a1b2" font-size="11" text-anchor="middle">1,804,871 comments</text>
+  <text x="135" y="200" fill="#97a1b2" font-size="11" text-anchor="middle">balanced subset: 100,000</text>
+
+  <!-- DistilBERT fine-tune -->
+  <rect x="300" y="116" width="230" height="100" rx="10" fill="#161a23" stroke="#3ddc97" stroke-width="1.5"/>
+  <text x="415" y="142" fill="#3ddc97" font-size="14" font-weight="bold" text-anchor="middle">DistilBERT fine-tune</text>
+  <text x="415" y="160" fill="#97a1b2" font-size="11" text-anchor="middle">notebook / train_distilbert.py</text>
+  <text x="415" y="178" fill="#97a1b2" font-size="11" text-anchor="middle">6 layers, 768 dim, 12 heads</text>
+  <text x="415" y="194" fill="#97a1b2" font-size="11" text-anchor="middle">~66.96M params, max_len 128</text>
+  <text x="415" y="210" fill="#3ddc97" font-size="11" text-anchor="middle">val acc 0.8851, F1 0.887</text>
+
+  <!-- Checkpoint -->
+  <rect x="600" y="120" width="170" height="92" rx="10" fill="#161a23" stroke="#3ddc97" stroke-width="1.5"/>
+  <text x="685" y="152" fill="#3ddc97" font-size="14" font-weight="bold" text-anchor="middle">Checkpoint</text>
+  <text x="685" y="174" fill="#97a1b2" font-size="11" text-anchor="middle">saved fine-tuned</text>
+  <text x="685" y="190" fill="#97a1b2" font-size="11" text-anchor="middle">model weights</text>
+
+  <!-- train arrows -->
+  <line x1="230" y1="166" x2="298" y2="166" stroke="#97a1b2" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="264" y="158" fill="#97a1b2" font-size="10" text-anchor="middle">train</text>
+  <line x1="530" y1="166" x2="598" y2="166" stroke="#97a1b2" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="564" y="158" fill="#97a1b2" font-size="10" text-anchor="middle">export</text>
+
+  <!-- checkpoint loaded into API: arrow down -->
+  <path d="M685,212 L685,250 L550,250 L550,278" fill="none" stroke="#3ddc97" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="640" y="244" fill="#97a1b2" font-size="10" text-anchor="middle">load checkpoint</text>
+
+  <!-- ===== API box ===== -->
+  <text x="40" y="300" fill="#97a1b2" font-size="12" font-weight="bold">SERVE</text>
+  <rect x="220" y="282" width="660" height="200" rx="12" fill="#161a23" stroke="#5b8cff" stroke-width="2"/>
+  <text x="240" y="310" fill="#5b8cff" font-size="16" font-weight="bold">raven-api (FastAPI)</text>
+  <text x="640" y="310" fill="#97a1b2" font-size="11">endpoints:</text>
+  <text x="710" y="310" fill="#e8eaf0" font-size="11" font-weight="bold">POST /predict</text>
+  <text x="640" y="328" fill="#e8eaf0" font-size="11" font-weight="bold">POST /predict-batch  ·  POST /explain  ·  GET /health</text>
+
+  <!-- resilient chain label -->
+  <text x="240" y="352" fill="#97a1b2" font-size="11" font-weight="bold">Resilient fallback chain</text>
+
+  <!-- primary: fine-tuned DistilBERT -->
+  <rect x="240" y="362" width="190" height="96" rx="10" fill="#1d222e" stroke="#3ddc97" stroke-width="1.5"/>
+  <text x="335" y="386" fill="#3ddc97" font-size="13" font-weight="bold" text-anchor="middle">Primary</text>
+  <text x="335" y="406" fill="#e8eaf0" font-size="12" text-anchor="middle">fine-tuned</text>
+  <text x="335" y="422" fill="#e8eaf0" font-size="12" text-anchor="middle">DistilBERT</text>
+  <text x="335" y="444" fill="#97a1b2" font-size="10" text-anchor="middle">the real trained model</text>
+
+  <!-- fallback 1: AI-Gateway LLM -->
+  <rect x="455" y="362" width="190" height="96" rx="10" fill="#1d222e" stroke="#2c3340"/>
+  <text x="550" y="386" fill="#97a1b2" font-size="13" font-weight="bold" text-anchor="middle">Fallback 1</text>
+  <text x="550" y="406" fill="#97a1b2" font-size="12" text-anchor="middle">AI-Gateway LLM</text>
+  <text x="550" y="422" fill="#97a1b2" font-size="12" text-anchor="middle">classifier</text>
+  <text x="550" y="444" fill="#97a1b2" font-size="10" text-anchor="middle">on model error</text>
+
+  <!-- fallback 2: keyword heuristic -->
+  <rect x="670" y="362" width="190" height="96" rx="10" fill="#1d222e" stroke="#2c3340"/>
+  <text x="765" y="386" fill="#97a1b2" font-size="13" font-weight="bold" text-anchor="middle">Fallback 2</text>
+  <text x="765" y="406" fill="#97a1b2" font-size="12" text-anchor="middle">keyword demo</text>
+  <text x="765" y="422" fill="#97a1b2" font-size="12" text-anchor="middle">heuristic</text>
+  <text x="765" y="444" fill="#97a1b2" font-size="10" text-anchor="middle">if gateway unset</text>
+
+  <!-- chain arrows -->
+  <line x1="430" y1="410" x2="453" y2="410" stroke="#97a1b2" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="441" y="402" fill="#97a1b2" font-size="9" text-anchor="middle">on error</text>
+  <line x1="645" y1="410" x2="668" y2="410" stroke="#97a1b2" stroke-width="1.6" marker-end="url(#arrow)"/>
+  <text x="656" y="402" fill="#97a1b2" font-size="9" text-anchor="middle">if unset</text>
+
+  <!-- note under API -->
+  <text x="240" y="476" fill="#97a1b2" font-size="11">Note: all clients share one API contract; /health always reports the true source.</text>
+
+  <!-- ===== clients ===== -->
+  <text x="40" y="524" fill="#97a1b2" font-size="12" font-weight="bold">CLIENTS</text>
+
+  <!-- arrows from API down to clients -->
+  <path d="M380,482 L380,520 L210,520 L210,556" fill="none" stroke="#5b8cff" stroke-width="1.6" marker-end="url(#arrowblue)"/>
+  <line x1="550" y1="482" x2="550" y2="556" stroke="#5b8cff" stroke-width="1.6" marker-end="url(#arrowblue)"/>
+  <path d="M720,482 L720,520 L890,520 L890,556" fill="none" stroke="#5b8cff" stroke-width="1.6" marker-end="url(#arrowblue)"/>
+
+  <!-- raven-web -->
+  <rect x="60" y="558" width="300" height="118" rx="10" fill="#161a23" stroke="#2c3340"/>
+  <text x="210" y="586" fill="#e8eaf0" font-size="14" font-weight="bold" text-anchor="middle">raven-web</text>
+  <text x="210" y="606" fill="#97a1b2" font-size="11" text-anchor="middle">React demo website</text>
+  <text x="210" y="626" fill="#97a1b2" font-size="11" text-anchor="middle">live in-page demo of the</text>
+  <text x="210" y="642" fill="#97a1b2" font-size="11" text-anchor="middle">classifier and explanations</text>
+
+  <!-- extension -->
+  <rect x="400" y="558" width="300" height="118" rx="10" fill="#161a23" stroke="#2c3340"/>
+  <text x="550" y="586" fill="#e8eaf0" font-size="14" font-weight="bold" text-anchor="middle">extension</text>
+  <text x="550" y="606" fill="#97a1b2" font-size="11" text-anchor="middle">Chrome Manifest V3</text>
+  <text x="550" y="626" fill="#97a1b2" font-size="11" text-anchor="middle">inline pills flag comments on</text>
+  <text x="550" y="642" fill="#97a1b2" font-size="11" text-anchor="middle">X / YouTube / Instagram</text>
+
+  <!-- mobile -->
+  <rect x="740" y="558" width="300" height="118" rx="10" fill="#161a23" stroke="#2c3340"/>
+  <text x="890" y="586" fill="#e8eaf0" font-size="14" font-weight="bold" text-anchor="middle">raven-mobile</text>
+  <text x="890" y="606" fill="#97a1b2" font-size="11" text-anchor="middle">Expo mobile shell</text>
+  <text x="890" y="626" fill="#97a1b2" font-size="11" text-anchor="middle">review queue for the</text>
+  <text x="890" y="642" fill="#97a1b2" font-size="11" text-anchor="middle">comments needing review</text>
+
+  <!-- legend -->
+  <rect x="40" y="694" width="14" height="14" rx="3" fill="#3ddc97"/>
+  <text x="60" y="705" fill="#97a1b2" font-size="11">trained model (measured by us)</text>
+  <rect x="300" y="694" width="14" height="14" rx="3" fill="#5b8cff"/>
+  <text x="320" y="705" fill="#97a1b2" font-size="11">API</text>
+  <rect x="380" y="694" width="14" height="14" rx="3" fill="#1d222e" stroke="#2c3340"/>
+  <text x="400" y="705" fill="#97a1b2" font-size="11">fallback (muted)</text>
+</svg>

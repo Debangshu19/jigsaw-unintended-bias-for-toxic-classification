@@ -1,0 +1,52 @@
+<section class="slide" id="overview">
+  <div class="kicker">START HERE · WHAT WE BUILT</div>
+  <h2>What this project is</h2>
+
+  <p>Raven is a system that detects toxic and hate-speech comments. It answers one question: <b>which comments need a human moderator to look at?</b> Instead of a person reading every comment, Raven flags the risky ones as "needs review" and lets the safe ones through. The point is to save the moderator's time, not to replace their judgement.</p>
+
+  <h3>What we built</h3>
+  <p>One model, one API, and three clients. The three clients all speak the same API contract.</p>
+
+  <div class="cards">
+    <div class="card"><h4>The model</h4><p>A fine-tuned DistilBERT classifier that outputs P(toxic) for a comment. <span class="tag t-measured">measured by us</span></p></div>
+    <div class="card"><h4>The API</h4><p>A FastAPI service (<code>raven-api</code>). It has a fallback chain (real model &rarr; LLM via gateway &rarr; keyword heuristic) so a demo never hard-crashes.</p></div>
+    <div class="card"><h4>Web client</h4><p>A React website (<code>raven-web</code>) with a live demo you can type into.</p></div>
+    <div class="card"><h4>Browser extension</h4><p>A Chrome Manifest-V3 extension (<code>extension</code>) that flags comments inline on X, YouTube and Instagram.</p></div>
+    <div class="card"><h4>Mobile client</h4><p>An Expo mobile shell (<code>raven-mobile</code>) that calls the same API.</p></div>
+  </div>
+
+  <div class="figure" id="fig-system"><figcaption>Figure 1 — end-to-end system: training to three clients.</figcaption></div>
+
+  <h3>The dataset (English track)</h3>
+  <p>We trained the English model on the Jigsaw "Unintended Bias in Toxicity Classification" corpus (Civil Comments).</p>
+
+  <table class="data">
+    <thead>
+      <tr><th>Property</th><th>Value</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Total comments</td><td>1,804,871 <span class="tag t-measured">measured by us</span></td></tr>
+      <tr><td>Class balance</td><td>1,660,537 non-toxic vs 144,334 toxic (~11.5 : 1, about 8% toxic)</td></tr>
+      <tr><td>Label</td><td>continuous <code>target</code> in [0,1], binarised at 0.5 (<code>target &ge; 0.5 &rarr; toxic</code>)</td></tr>
+      <tr><td>Bias measurement</td><td>identity columns (muslim, black, white, female, &hellip;) allow per-subgroup checks</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note"><b>Honest caveat.</b> Two model families in this document were measured under two different evaluation regimes, and we keep them separate. The RNN/classical family was evaluated on the large split with the Jigsaw bias-aware AUC. DistilBERT was evaluated on a balanced 100,000-comment down-sample (50,000 per class) with plain accuracy/F1/ROC-AUC. The two sets of numbers are <b>not</b> directly comparable.</div>
+
+  <h3>Roadmap — how this document reads</h3>
+  <p>The talk walks up a ladder of model capacity, and then turns to our own contribution.</p>
+
+  <ol>
+    <li><b>Classical / TF-IDF</b> — bag-of-words with logistic regression, the simplest baseline.</li>
+    <li><b>LSTM &amp; RNN family</b> — single LSTM, BiLSTM, weighted BiLSTM, BiGRU with attention.</li>
+    <li><b>DistilBERT</b> — our transformer: a distilled backbone we fine-tuned.</li>
+    <li><b>Larger transformer</b> — the next capacity step (reasoning + literature, <span class="tag t-proposed">proposed next step</span>, not run by us).</li>
+    <li><b>Ensemble</b> — simple averaging of diverse models (theory + Kaggle literature).</li>
+    <li><b>Final model</b> — what it can and cannot do, stated honestly.</li>
+    <li><b>RAVEN-X</b> — our original contribution: cross-script rationale transfer for low-resource Hindi.</li>
+    <li><b>Architecture diagrams</b> — how the pieces fit together.</li>
+  </ol>
+
+  <div class="keypoint"><b>Takeaway.</b> Raven is a toxicity triage system: one fine-tuned model behind one API, used by three clients. This document climbs from a simple baseline up to a transformer and an ensemble, then presents RAVEN-X, our own method for low-resource Hindi.</div>
+</section>

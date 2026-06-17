@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="590" viewBox="0 0 1000 590" font-family="-apple-system, Helvetica, Arial, sans-serif">
+<rect x="1" y="1" width="998" height="588" rx="16" fill="#11141b" stroke="#2c3340"/>
+<text x="40" y="46" fill="#e8eaf0" font-size="21" font-weight="700">Why a bigger model is not automatically better</text>
+<text x="40" y="70" fill="#97a1b2" font-size="12.5">Illustrative (standard bias-variance theory) &#8212; not our measurements.</text>
+<line x1="110" y1="470" x2="900" y2="470" stroke="#97a1b2" stroke-width="1.5"/>
+<line x1="110" y1="95" x2="110" y2="470" stroke="#97a1b2" stroke-width="1.5"/>
+<text x="505" y="524" fill="#e8eaf0" font-size="13.5" text-anchor="middle">model capacity  (LSTM &#8594; DistilBERT &#8594; BERT-large)  &#8594;</text>
+<text x="34" y="282" fill="#e8eaf0" font-size="13.5" text-anchor="middle" transform="rotate(-90 34 282)">expected error &#8594;</text>
+<line x1="465.5" y1="95" x2="465.5" y2="470" stroke="#3ddc97" stroke-width="1.5" stroke-dasharray="4 4"/>
+<text x="465.5" y="89" fill="#3ddc97" font-size="12" text-anchor="middle">best capacity</text>
+<text x="180" y="462" fill="#97a1b2" font-size="12">underfitting</text>
+<text x="830" y="462" fill="#97a1b2" font-size="12" text-anchor="end">overfitting</text>
+<polyline points="110.0,147.9 123.2,163.0 136.3,177.3 149.5,191.0 162.7,203.9 175.8,216.3 189.0,228.0 202.2,239.1 215.3,249.8 228.5,259.9 241.7,269.5 254.8,278.6 268.0,287.3 281.2,295.5 294.3,303.4 307.5,310.9 320.7,318.0 333.8,324.8 347.0,331.2 360.2,337.3 373.3,343.2 386.5,348.7 399.7,354.0 412.8,359.0 426.0,363.7 439.2,368.3 452.3,372.6 465.5,376.7 478.7,380.6 491.8,384.3 505.0,387.9 518.2,391.2 531.3,394.4 544.5,397.5 557.7,400.3 570.8,403.1 584.0,405.7 597.2,408.2 610.3,410.6 623.5,412.8 636.7,415.0 649.8,417.0 663.0,418.9 676.2,420.8 689.3,422.5 702.5,424.2 715.7,425.8 728.8,427.3 742.0,428.7 755.2,430.1 768.3,431.4 781.5,432.7 794.7,433.8 807.8,434.9 821.0,436.0 834.2,437.0 847.3,438.0 860.5,438.9 873.7,439.8 886.8,440.6 900.0,441.4" fill="none" stroke="#5b8cff" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="110.0,447.9 123.2,447.9 136.3,447.6 149.5,447.3 162.7,446.8 175.8,446.1 189.0,445.3 202.2,444.3 215.3,443.2 228.5,442.0 241.7,440.6 254.8,439.0 268.0,437.4 281.2,435.5 294.3,433.5 307.5,431.4 320.7,429.1 333.8,426.7 347.0,424.1 360.2,421.4 373.3,418.5 386.5,415.5 399.7,412.4 412.8,409.0 426.0,405.6 439.2,402.0 452.3,398.2 465.5,394.3 478.7,390.3 491.8,386.1 505.0,381.8 518.2,377.3 531.3,372.6 544.5,367.9 557.7,362.9 570.8,357.9 584.0,352.6 597.2,347.3 610.3,341.8 623.5,336.1 636.7,330.3 649.8,324.3 663.0,318.2 676.2,312.0 689.3,305.6 702.5,299.0 715.7,292.4 728.8,285.5 742.0,278.5 755.2,271.4 768.3,264.1 781.5,256.7 794.7,249.1 807.8,241.4 821.0,233.5 834.2,225.5 847.3,217.4 860.5,209.0 873.7,200.6 886.8,192.0 900.0,183.2" fill="none" stroke="#ffb454" stroke-width="3" stroke-linejoin="round"/>
+<polyline points="110.0,125.9 123.2,140.9 136.3,155.0 149.5,168.2 162.7,180.7 175.8,192.4 189.0,203.3 202.2,213.5 215.3,223.0 228.5,231.8 241.7,240.0 254.8,247.6 268.0,254.6 281.2,261.1 294.3,266.9 307.5,272.3 320.7,277.1 333.8,281.5 347.0,285.3 360.2,288.7 373.3,291.7 386.5,294.2 399.7,296.3 412.8,298.0 426.0,299.3 439.2,300.3 452.3,300.8 465.5,301.0 478.7,300.9 491.8,300.4 505.0,299.6 518.2,298.5 531.3,297.1 544.5,295.3 557.7,293.3 570.8,291.0 584.0,288.4 597.2,285.5 610.3,282.3 623.5,278.9 636.7,275.3 649.8,271.3 663.0,267.2 676.2,262.8 689.3,258.1 702.5,253.3 715.7,248.2 728.8,242.8 742.0,237.3 755.2,231.5 768.3,225.5 781.5,219.3 794.7,212.9 807.8,206.3 821.0,199.5 834.2,192.5 847.3,185.3 860.5,177.9 873.7,170.4 886.8,162.6 900.0,154.6" fill="none" stroke="#e8eaf0" stroke-width="3.4" stroke-linejoin="round"/>
+<text x="599.8" y="400.7" fill="#5b8cff" font-size="13" font-weight="600">bias&#178; (drops as model grows)</text>
+<text x="742.0" y="282.5" fill="#ffb454" font-size="13" font-weight="600" text-anchor="end">variance (rises)</text>
+<text x="157.4" y="165.8" fill="#e8eaf0" font-size="13" font-weight="700">total error</text>
+<circle cx="347.0" cy="285.3" r="6" fill="#3ddc97" stroke="#0b0d12" stroke-width="2"/>
+<text x="359.0" y="273.3" fill="#3ddc97" font-size="12.5" font-weight="600" text-anchor="start">DistilBERT (small)</text>
+<circle cx="678.8" cy="261.9" r="6" fill="#b48cff" stroke="#0b0d12" stroke-width="2"/>
+<text x="666.8" y="249.9" fill="#b48cff" font-size="12.5" font-weight="600" text-anchor="end">BERT-large (more capacity)</text>
+<text x="505" y="564" fill="#97a1b2" font-size="12" text-anchor="middle">A single larger encoder moves right: it lowers bias but adds variance &#8212; so it raises the ceiling, it does not remove single-model error.</text>
+</svg>
