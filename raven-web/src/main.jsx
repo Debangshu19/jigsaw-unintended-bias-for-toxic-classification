@@ -628,7 +628,7 @@ function App() {
                       aria-label="Type a comment for Raven to check"
                     />
                     <div className="prompt-input-actions">
-                      <span className="prompt-input-hint">Raven · DistilBERT toxicity model</span>
+                      <span className="prompt-input-hint">Raven · toxicity model</span>
                       <button
                         type="submit"
                         className="prompt-send"
