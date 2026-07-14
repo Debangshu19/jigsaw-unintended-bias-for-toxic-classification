@@ -620,6 +620,41 @@ textarea {
 }
 
 /* ---- Suggestions (made to pop) ---- */
+.lang-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  margin-bottom: 20px;
+  border-radius: 999px;
+  background: rgba(120, 120, 130, 0.1);
+  border: 1px solid rgba(120, 120, 130, 0.18);
+}
+
+.lang-tab {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 7px 18px;
+  border-radius: 999px;
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: inherit;
+  opacity: 0.62;
+  cursor: pointer;
+  transition: background 0.18s ease, opacity 0.18s ease;
+}
+
+.lang-tab:hover {
+  opacity: 0.9;
+}
+
+.lang-tab.is-active {
+  background: rgba(255, 255, 255, 0.9);
+  color: #111;
+  opacity: 1;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
 .chat-suggestions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
