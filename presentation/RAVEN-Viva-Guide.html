@@ -1,0 +1,225 @@
+<meta charset="utf-8">
+<title>RAVEN — Viva Guide (page by page)</title>
+<style>
+  @page { size: A4; margin: 15mm 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color:#16181d; font-size: 11.4px; line-height: 1.5; }
+  h1.doc { font-size: 25px; margin: 0 0 2px; }
+  .sub { color:#5b6472; font-size: 12px; margin-bottom: 14px; }
+  .page { border:1px solid #dde1e8; border-radius: 11px; padding: 14px 17px; margin: 0 0 13px; page-break-inside: avoid; }
+  .page.brk { page-break-before: always; }
+  .pnum { display:inline-block; background:#111827; color:#fff; font-weight:700; font-size:11px; padding:2px 10px; border-radius:999px; margin-right:8px;}
+  .ptitle { font-size: 15.5px; font-weight: 750; }
+  .lbl { text-transform: uppercase; letter-spacing:.6px; font-size:9px; font-weight:700; color:#6b7280; margin:11px 0 3px;}
+  .say { border-left:3px solid #2563eb; background:#f5f8ff; padding:7px 11px; border-radius:0 6px 6px 0; }
+  .say b { color:#1e40af; }
+  dl { margin:4px 0 0; }
+  dt { font-weight:700; margin-top:8px; color:#111; }
+  dt::before { content:"Q "; color:#d33; font-weight:800; }
+  dd { margin:2px 0 0 0; }
+  dd::before { content:"A "; color:#1f9d55; font-weight:800; }
+  .tip { background:#fff7ed; border:1px solid #fed7aa; border-radius:7px; padding:7px 11px; margin-top:8px; }
+  .big { background:#eef2ff; border:1px solid #c7d2fe; border-radius:8px; padding:10px 13px; margin:8px 0; }
+  table { border-collapse: collapse; width:100%; font-size:10.5px; margin:5px 0;}
+  th,td { border:1px solid #d7dbe2; padding:4px 7px; text-align:left; }
+  th { background:#eef1f5; }
+  .red { color:#d33; font-weight:700; }
+  code { background:#eef1f5; padding:0 3px; border-radius:3px; font-size:10px;}
+  .rule { display:flex; gap:8px; margin:4px 0; }
+  .rule b { color:#1e40af; }
+</style>
+
+<h1 class="doc">RAVEN — Viva Guide, page by page</h1>
+<div class="sub">For every slide: <b>what you say</b> · <b>what the teacher can ask</b> · <b>how you answer in simple words</b>.
+Extra depth on RAVEN-X, the metrics, and the live demo. All numbers are from our real runs.</div>
+
+<div class="big">
+<b>3 golden rules for the whole viva</b>
+<div class="rule"><b>1.</b> Speak in plain words first, show the number second. "It catches 90 out of 100 toxic comments" is better than "recall 0.90."</div>
+<div class="rule"><b>2.</b> Never bluff. If you don't know, say "we did not measure that, but here is how we would." Honesty scores; a caught lie sinks the viva.</div>
+<div class="rule"><b>3.</b> Bring every answer back to <b>recall</b> (catching toxic comments) and to <b>RAVEN-X</b> (our own new idea). Those are our strengths.</div>
+</div>
+
+<div class="tip"><b>The whole project in 3 sentences (memorise this):</b> "We built RAVEN, a system that reads a comment and says toxic or safe, and flags the toxic ones for a human moderator. On English we fine-tuned DistilBERT and it catches 90% of toxic comments. Then we built our own method, RAVEN-X, that also works on Hindi written in Devanagari — even pointing at which words are toxic — by transferring that skill from English, and it runs live in a website and a Chrome extension."</div>
+
+<!-- 1 -->
+<div class="page">
+  <div><span class="pnum">1</span><span class="ptitle">Title — RAVEN · Hate-Speech Classification</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"Good morning ma'am. Our project is <b>RAVEN</b> — a hate-speech classifier. It reads any social-media comment and decides if it is toxic or safe, so that human moderators only have to read the harmful ones. I will also show our own extension of it, RAVEN-X, for Hindi."</div>
+  <div class="lbl">If the teacher asks</div>
+  <dl>
+    <dt>Why the name RAVEN?</dt><dd>It is just our project name for the system; the raven is a bird known for watching — our system watches comments.</dd>
+    <dt>What is hate speech, exactly?</dt><dd>Language that attacks or demeans a person or group — insults, threats, identity attacks. We separate it from normal rude talk, which we do NOT flag.</dd>
+  </dl>
+</div>
+
+<!-- 2 -->
+<div class="page">
+  <div><span class="pnum">2</span><span class="ptitle">Problem Statement</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"Social media has too many comments for humans to read. Some speech incites violence or spreads misinformation. Missing one toxic comment is worse than wrongly flagging a clean one. So our <b>goal</b> is to automatically flag every comment that needs review, so a moderator reads only the few that matter, not the millions that do not."</div>
+  <div class="lbl">If the teacher asks</div>
+  <dl>
+    <dt>Why can't a simple keyword/bad-word list do this?</dt><dd>Because the same word can be a joke or an attack — "you killed it" is praise. A word list has no context, so it both misses hidden hate and wrongly flags clean text.</dd>
+    <dt>Why is "missing a toxic comment" worse than a false alarm?</dt><dd>A false alarm just sends a clean comment to a human who clears it in a second. A missed toxic comment stays public and can cause real harm. That is why our main metric is <b>recall</b> — how many toxic ones we catch.</dd>
+    <dt>Who is the user?</dt><dd>A content-moderation team, or a normal user who wants toxic replies flagged as they scroll — which our Chrome extension does.</dd>
+  </dl>
+</div>
+
+<!-- 3 -->
+<div class="page">
+  <div><span class="pnum">3</span><span class="ptitle">Related Work</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"We built on six well-known works. Davidson separated hate from merely rude language. BERT is the transformer our English model builds on. DistilBERT is a smaller, faster BERT — our live English classifier. MuRIL is a BERT for Indian languages — we use it to read Devanagari Hindi. Jigsaw is our English training data, and HASOC is our Hindi data."</div>
+  <div class="lbl">If the teacher asks</div>
+  <dl>
+    <dt>What did YOU add on top of these?</dt><dd>Two things: (1) we fine-tuned DistilBERT into a working live product with a website and extension; (2) our own method RAVEN-X, which transfers word-level hate explanations from English to Hindi — that part is new, nobody in these papers did it.</dd>
+    <dt>Difference between BERT and DistilBERT?</dt><dd>DistilBERT is a compressed BERT — 40% smaller, 60% faster, keeps about 97% of the accuracy. HuggingFace made it by "distillation." We did not distil it ourselves; we fine-tuned the ready-made one.</dd>
+    <dt>What is MuRIL and why use it?</dt><dd>MuRIL is a BERT that Google pre-trained on 17 Indian languages plus English. So it already understands Devanagari Hindi, which our English DistilBERT cannot read.</dd>
+  </dl>
+</div>
+
+<!-- 4 -->
+<div class="page">
+  <div><span class="pnum">4</span><span class="ptitle">Datasets — Jigsaw (English) &amp; HASOC (Hindi)</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"Two datasets, two languages, very different sizes. <b>Jigsaw</b> — 1.8 million English Wikipedia comments, human-labelled, but only about 8% are toxic, so it is very imbalanced. <b>HASOC-2019</b> — 4,665 Hindi posts in Devanagari, labelled hate/offensive or not. Hindi is tiny — about 380 times smaller — which is exactly the low-resource problem we solve."</div>
+  <div class="lbl">If the teacher asks</div>
+  <dl>
+    <dt>Only 4,665 Hindi posts — isn't that too small?</dt><dd>Yes, and that IS the point. Hindi is a low-resource language; big labelled sets don't exist. If Hindi had millions of labels the project would be trivial. Our RAVEN-X borrows knowledge from English precisely because Hindi labels are few.</dd>
+    <dt>What does "imbalanced" mean and why does it matter?</dt><dd>Only 8% of comments are toxic, so a lazy model can call everything "safe" and still be 92% accurate — while catching zero toxic comments. That is why we judge by recall, not accuracy, and why we balanced the data when training.</dd>
+    <dt>How did you label / preprocess?</dt><dd>Jigsaw came human-labelled with a toxicity score; we made it binary (toxic if score ≥ 0.5). We lowercased text, removed URLs and @mentions, then tokenized. We used an 80/10/10 stratified train-validation-test split so the class balance is kept in every part.</dd>
+    <dt>What is a stratified split?</dt><dd>Splitting so each part (train/val/test) has the same toxic-to-safe ratio — so the test is a fair mirror of reality.</dd>
+  </dl>
+</div>
+
+<!-- 5 -->
+<div class="page brk">
+  <div><span class="pnum">5</span><span class="ptitle">Baselines — the accuracy trap</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"We first tried simpler models. Look at the trap: TF-IDF and a single LSTM get 87–95% <b>accuracy</b> but their <b>recall is only 0.45</b> — they miss more than half of toxic comments. Accuracy lied. Only the BiLSTM, reading context in both directions, reached 0.914 recall. This is why we moved to a transformer."</div>
+  <table>
+    <tr><th>Model</th><th>Accuracy</th><th>Toxic recall</th></tr>
+    <tr><td>TF-IDF + LogReg</td><td>0.87</td><td class="red">0.448</td></tr>
+    <tr><td>Single LSTM</td><td>0.947</td><td class="red">0.452</td></tr>
+    <tr><td>BiLSTM</td><td>0.811</td><td>0.914</td></tr>
+  </table>
+  <div class="lbl">If the teacher asks</div>
+  <dl>
+    <dt>What is TF-IDF?</dt><dd>A simple method that counts how important each word is in a comment (rare words weigh more). It has no understanding of order or context — just word counts.</dd>
+    <dt>What is an LSTM, and why is BiLSTM better?</dt><dd>An LSTM is a network that reads a sentence word by word and remembers earlier words. BiLSTM reads it both forward and backward, so it understands a word using words on both sides — that context is why its recall jumped to 0.914.</dd>
+    <dt>BiLSTM already gets 0.914 recall — why not stop here?</dt><dd>Its accuracy dropped to 0.81 and it still misses subtle context and sarcasm. A transformer (DistilBERT) gives high recall AND stays accurate, and is small enough to serve live.</dd>
+    <dt>Whose work were the baselines?</dt><dd>The classical and RNN baselines were mainly a teammate's contribution; the transformer and the whole product/RAVEN-X side is our track. (Say this only if asked about division of work.)</dd>
+  </dl>
+</div>
+
+<!-- 6 -->
+<div class="page">
+  <div><span class="pnum">6</span><span class="ptitle">Why DistilBERT</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"<b>Problem:</b> bag-of-words and single word-vectors have no context, so they miss sarcasm. <b>Fix:</b> a transformer reads the whole sentence with self-attention, so meaning comes from context, not keywords. <b>Why the distilled one:</b> full BERT is too big for our single GPU; DistilBERT is 40% smaller, 60% faster, keeps ~97% accuracy, small enough to run live. <b>Effect:</b> recall jumps from 0.45 to 0.90."</div>
+  <div class="lbl">If the teacher asks</div>
+  <dl>
+    <dt>What is "self-attention" / a transformer, in simple words?</dt><dd>For each word, the model looks at every other word in the sentence and decides which ones matter for its meaning. So "kill" in "you killed it" is understood from "it" nearby, not treated as violence.</dd>
+    <dt>Did you distil BERT yourself?</dt><dd>No. DistilBERT was already distilled by HuggingFace. We took that ready model and <b>fine-tuned</b> it on our toxic-comment data. We never ran a teacher-student distillation ourselves.</dd>
+    <dt>What is fine-tuning?</dt><dd>Taking a model already trained on huge general text and training it a little more on our specific task (toxic vs safe). Cheap, and works with less data.</dd>
+    <dt>How big is the model?</dt><dd>66.9 million parameters, 6 transformer layers, 12 attention heads, hidden size 768. Input length capped at 128 tokens.</dd>
+  </dl>
+</div>
+
+<!-- 7 -->
+<div class="page">
+  <div><span class="pnum">7</span><span class="ptitle">DistilBERT results</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"On 10,000 held-out toxic comments it missed only 1,011 — so <b>recall 0.899</b>. Accuracy 0.885, precision 0.875, F1 0.887, ROC-AUC 0.9515. The confusion matrix shows most errors are on the safe side, which is what we want — we would rather over-flag than miss toxic."</div>
+  <div class="lbl">If the teacher asks — the METRICS (know these cold)</div>
+  <dl>
+    <dt>What is precision vs recall?</dt><dd><b>Precision</b> = of the comments I called toxic, how many really were (avoids false alarms). <b>Recall</b> = of all truly toxic comments, how many I caught (avoids misses). We care most about recall.</dd>
+    <dt>What is F1?</dt><dd>The balance (harmonic mean) of precision and recall — one number that is high only when both are good.</dd>
+    <dt>What is a confusion matrix?</dt><dd>A 2×2 table: TN=8712 safe called safe, FP=1288 safe wrongly called toxic, FN=1011 toxic wrongly called safe (the misses), TP=8989 toxic caught. FN is the box we most want small.</dd>
+    <dt>What is ROC-AUC?</dt><dd>How well the model separates toxic from safe across all thresholds; 1.0 is perfect, 0.5 is guessing. Ours is 0.9515 — strong separation.</dd>
+    <dt>Did the full 1.8 million go into DistilBERT?</dt><dd>The full dataset was used across the project; for the transformer fine-tune we used a <b>balanced sample of 100,000</b> (50% toxic, 50% safe). On the raw 8% data the model just predicts "safe"; balancing forced it to learn the toxic class and lifted recall to 0.90.</dd>
+    <dt>How did you avoid overfitting?</dt><dd>We watched validation loss. Training for 3 epochs lowered training loss but raised validation loss — classic overfitting — so about 1 epoch was best. We report that honestly.</dd>
+  </dl>
+</div>
+
+<!-- 8 -->
+<div class="page">
+  <div><span class="pnum">8</span><span class="ptitle">Live software — web app + Chrome extension</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"This is not just a notebook — it is a working product. The <b>web app</b>: paste any comment and get Toxic or Safe with a confidence score and the toxic words highlighted. The <b>Chrome extension</b>: it scores real posts inline on X as you scroll, right where the abuse happens. One model behind both, served by one API."</div>
+  <div class="lbl">How to SHOW the demo (do this live, calmly)</div>
+  <dl>
+    <dt>Step 1</dt><dd>Start the server once (we run one command, it loads the model). Open the website.</dd>
+    <dt>Step 2</dt><dd>Type a clearly toxic line → it turns red "Toxic 98%" and highlights the bad word. Type a clean line → green "Safe". Type a tricky one like "you killed it" → Safe (shows it understands context).</dd>
+    <dt>Step 3</dt><dd>Switch to the हिंदी tab and paste a Hindi line → it still works (that's RAVEN-X, next slide).</dd>
+    <dt>Step 4</dt><dd>Open X with the extension on → toxic replies show a red "Insult 92%" badge inline.</dd>
+  </dl>
+  <div class="lbl">If the teacher asks</div>
+  <dl>
+    <dt>How does the extension work technically?</dt><dd>It reads the visible comments on the page, sends their text to our API, gets back toxic/safe + score, and draws a small coloured badge next to each. It caches results so scrolling stays fast.</dd>
+    <dt>What is the API / the stack?</dt><dd>A FastAPI service in Python. It loads the model once and answers a <code>/predict</code> request with the label and score. Website, extension and mobile all call the same API, so the language logic lives in one place.</dd>
+    <dt>Is it fast enough / real-time?</dt><dd>Yes — each comment is one quick forward pass; we cap input at 128 tokens and cache repeats, so results appear as you scroll.</dd>
+  </dl>
+</div>
+
+<!-- 9 RAVEN-X deep -->
+<div class="page brk">
+  <div><span class="pnum">9</span><span class="ptitle">RAVEN-X — cross-script rationale transfer ★ (YOUR main part)</span></div>
+  <div class="lbl">Say it simply first (the analogy)</div>
+  <div class="say">"Imagine a teacher who taught a student to <b>underline the rude words</b> in <b>English</b> sentences. Then you give that student a <b>Hindi</b> sentence in Devanagari — and the student underlines the rude Hindi words too, even though nobody ever showed them rude Hindi words. That transfer is what RAVEN-X does. The 'X' means cross-script — English to Devanagari."</div>
+  <div class="lbl">What you say (the real version)</div>
+  <div class="say"><b>Problem:</b> we can label <i>whether</i> a Hindi comment is toxic, but we have <b>no Hindi labels for which words</b> are toxic — those word-level labels exist only in English. <b>Idea:</b> train <b>one shared MuRIL model</b> to do two jobs at once — decide toxic/not (Hindi + English) and highlight the toxic words (English only) — so the "point at the hateful word" skill transfers to Hindi. <b>Why it can transfer:</b> MuRIL puts an English slur and a Hindi slur in the <b>same meaning space</b>, even though the two scripts share zero letters. <b>Result: macro-F1 0.842 vs 0.787 for TF-IDF — +5.5 points.</b></div>
+  <div class="lbl">If the teacher asks — expect the hardest questions HERE</div>
+  <dl>
+    <dt>What is your novel contribution, in one line?</dt><dd>Teaching the model to point at hateful <i>words</i> using only English word-labels, and having it work on Hindi in Devanagari where no such labels exist — and we <b>measure</b> whether the explanation is honest, not just assume it.</dd>
+    <dt>How can it explain Hindi with zero Hindi word-labels?</dt><dd>We use a <b>masked multi-task loss</b>: the "highlight words" head only learns from English (which has word-labels); the "toxic/not" head learns from both. So we never train on a label we don't have — the word-skill still transfers through the shared model.</dd>
+    <dt>Why does the skill transfer across two different alphabets?</dt><dd>Because MuRIL was pre-trained on Hindi and English together, it stores meaning, not spelling. An English slur and a Hindi slur end up near each other in its internal "meaning space", so a skill learned on one fires on the other — even with zero shared letters.</dd>
+    <dt>Where do the English word-labels come from?</dt><dd>HateXplain — an English dataset where humans marked which exact words made a post hateful. That is our only source of word-level rationale.</dd>
+    <dt>What is a "rationale" / "faithfulness"?</dt><dd>Rationale = the exact words the model says are toxic (the explanation). Faithfulness = is that explanation the real reason? We test it by <b>deleting</b> those words: if the toxic score collapses, the explanation was real. This test needs no labels, so it works in Hindi.</dd>
+    <dt>What did you actually score on Hindi?</dt><dd>On the HASOC Hindi test set: <b>accuracy 0.837, recall 0.819, F1 0.842, macro-F1 0.837, precision 0.866.</b> The transformer beats a TF-IDF baseline (0.787) by 5.5 points.</dd>
+    <dt>What is macro-F1 and why use it here?</dt><dd>F1 averaged equally over both classes (toxic and not). It is honest when classes are uneven, because it won't let the big class hide poor performance on the small one.</dd>
+    <dt>Any honest weakness?</dt><dd>Yes — when we turn on the Hindi explanation objective, accuracy dips from 0.842 to 0.802 in exchange for better explanations. That accuracy-vs-explainability trade-off is exactly what we set out to measure, and reporting it is part of the contribution.</dd>
+    <dt>Your training settings (if pushed)?</dt><dd>MuRIL-base (236M). AdamW, learning rate 2e-5 for the encoder and 1e-4 for the new heads, batch of 16 (8 Hindi + 8 English), max length 128, mixed precision (fp16), decision threshold 0.5.</dd>
+    <dt>Is it code-mixed / Hinglish?</dt><dd>We measured it: about 82% of the characters are Devanagari, so it is native Hindi script, not romanized Hinglish. We analyse the small Latin part separately.</dd>
+  </dl>
+</div>
+
+<!-- 10 -->
+<div class="page">
+  <div><span class="pnum">10</span><span class="ptitle">Future Scope — Ensembling</span></div>
+  <div class="lbl">Say it simply</div>
+  <div class="say">"Even our best single model makes some unstable mistakes. If we run <b>several different models</b> and <b>average their scores</b>, their random mistakes point in different directions and cancel out — so the combined answer is steadier and catches more. That is ensembling, and it is our next step."</div>
+  <div class="lbl">If the teacher asks — the graph / the math</div>
+  <dl>
+    <dt>What does the graph show? What is "error variance" and "K"?</dt><dd><b>Error variance</b> = how much a model's mistakes wobble from run to run. <b>K</b> = how many models we average. The curve goes down: average K independent models and the wobble shrinks to about one-Kth. Two models already halve it.</dd>
+    <dt>Why are there two curves?</dt><dd>The lower (black) curve is <b>independent</b> models — mistakes fully cancel. The upper (grey) is <b>correlated</b> models — they make similar mistakes, so averaging helps less. Lesson: average <b>diverse</b> models (a transformer + an RNN + a bigger transformer), not copies.</dd>
+    <dt>Do you have proof this works?</dt><dd>Yes — in the Kaggle Jigsaw competition the 8th-place team averaged 4 different models; no top team used a single model.</dd>
+    <dt>Why haven't you done it yet? What number will you get?</dt><dd>It is future work — we present it with the theory and the Kaggle evidence. We will report the actual number only after we measure it; we don't quote an unmeasured result.</dd>
+  </dl>
+</div>
+
+<!-- 11 -->
+<div class="page">
+  <div><span class="pnum">11</span><span class="ptitle">Thank You</span></div>
+  <div class="lbl">What you say</div>
+  <div class="say">"To summarise: RAVEN catches 90% of toxic English comments, RAVEN-X extends that to Hindi in Devanagari and even points at the toxic words, and both run live in a website and a Chrome extension. Thank you, ma'am."</div>
+  <div class="tip"><b>If she asks "what did you learn / what's hard?"</b> — "That accuracy can lie on imbalanced data, so we learned to trust recall; and that a model can transfer a skill across languages through shared meaning, which is what let us reach Hindi without Hindi word-labels."</div>
+</div>
+
+<!-- Rapid fire -->
+<div class="page brk">
+  <div><span class="pnum">★</span><span class="ptitle">Rapid-fire answers (one line each)</span></div>
+  <dl>
+    <dt>Your main contribution?</dt><dd>Cross-script rationale transfer — English word-labels teach the model to highlight toxic words in Hindi Devanagari, measured with a deletion test.</dd>
+    <dt>Why recall not accuracy?</dt><dd>Only 8% is toxic, so accuracy can be 92% while catching nothing; recall measures how many toxic comments we actually catch.</dd>
+    <dt>Why DistilBERT?</dt><dd>Small and fast (40% smaller, 60% faster), keeps ~97% of BERT, fits our GPU, serves live.</dd>
+    <dt>Why MuRIL?</dt><dd>Pre-trained on Indian languages + English together, so it reads Devanagari and aligns the two scripts internally.</dd>
+    <dt>Did you distil BERT?</dt><dd>No — we fine-tuned the already-distilled model.</dd>
+    <dt>Best English recall?</dt><dd>0.899 (misses only 1,011 of 10,000 toxic).</dd>
+    <dt>Best Hindi score?</dt><dd>macro-F1 0.842 / test 0.837, beats TF-IDF 0.787 by 5.5 points.</dd>
+    <dt>How is it deployed?</dt><dd>One FastAPI service; website, Chrome extension and mobile all call it; the server detects script and picks English or Hindi model.</dd>
+    <dt>Biggest limitation?</dt><dd>Small Hindi data and single-seed run; and explanation costs a little accuracy — both stated honestly, both future work.</dd>
+  </dl>
+</div>

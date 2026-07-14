@@ -83,6 +83,16 @@ const chatSamples = [
   "Shut up you worthless loser, nobody wants you here."
 ];
 
+// Hindi (Devanagari) samples — routed automatically to the MuRIL model by script.
+const chatSamplesHi = [
+  "तुम बिल्कुल बेवकूफ हो और सब तुमसे नफरत करते हैं।",
+  "बहुत बढ़िया लेख, इसे साझा करने के लिए धन्यवाद!",
+  "मैं आपकी राय से असहमत हूँ, पर आपकी मेहनत का सम्मान करता हूँ।",
+  "चुप हो जाओ बेकार इंसान, यहाँ तुम्हें कोई नहीं चाहता।"
+];
+
+const SAMPLES_BY_LANG = { en: chatSamples, hi: chatSamplesHi };
+
 function Reveal({ children, delay = 0, className = "" }) {
   const ref = useRef(null);
   const [visible, setVisible] = useState(false);
@@ -216,6 +226,7 @@ function App() {
   const [activeId, setActiveId] = useState(null);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
+  const [lang, setLang] = useState("en"); // "en" | "hi" — playground language tab
 
   const composerRef = useRef(null);
   const threadRef = useRef(null);
@@ -565,8 +576,28 @@ function App() {
                   <div className="chat-hero">
                     <h1>What should Raven check?</h1>
                     <p>Paste any comment or post and Raven tells you instantly if it&apos;s toxic, borderline, or safe.</p>
+                    <div className="lang-tabs" role="tablist" aria-label="Input language">
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={lang === "en"}
+                        className={lang === "en" ? "lang-tab is-active" : "lang-tab"}
+                        onClick={() => setLang("en")}
+                      >
+                        English
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={lang === "hi"}
+                        className={lang === "hi" ? "lang-tab is-active" : "lang-tab"}
+                        onClick={() => setLang("hi")}
+                      >
+                        हिंदी · Devanagari
+                      </button>
+                    </div>
                     <div className="chat-suggestions">
-                      {chatSamples.map((sample) => (
+                      {SAMPLES_BY_LANG[lang].map((sample) => (
                         <button type="button" key={sample} onClick={() => sendMessage(sample)}>
                           <span>{sample}</span>
                           <ArrowUp size={15} />
@@ -624,11 +655,11 @@ function App() {
                         el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
                       }}
                       onKeyDown={onComposerKeyDown}
-                      placeholder="Paste a comment to check…"
+                      placeholder={lang === "hi" ? "जाँचने के लिए कोई टिप्पणी लिखें…" : "Paste a comment to check…"}
                       aria-label="Type a comment for Raven to check"
                     />
                     <div className="prompt-input-actions">
-                      <span className="prompt-input-hint">Raven · toxicity model</span>
+                      <span className="prompt-input-hint">{lang === "hi" ? "Raven · MuRIL Hindi model" : "Raven · toxicity model"}</span>
                       <button
                         type="submit"
                         className="prompt-send"

@@ -73,6 +73,20 @@ export RAVEN_THRESHOLD=0.5
 uvicorn app:app --reload --port 8000
 ```
 
+### Hindi / Devanagari (multilingual routing)
+
+Set `RAVEN_HI_MODEL_DIR` (or `RAVEN_HI_MODEL_ID`) to a MuRIL sequence-classification
+model. The API then routes each comment by script: **Devanagari → Hindi model,
+otherwise → English model**. Both web and extension get Hindi support with no
+client change. Train the Hindi model with `raven-codemixed/train_muril_hi.py`.
+
+```bash
+export RAVEN_MODEL_ID=unitary/toxic-bert                                   # English track
+export RAVEN_HI_MODEL_DIR=/Users/niladri/Documents/mine/clgFinalYear/models/raven-muril-hi  # Hindi track
+export RAVEN_THRESHOLD=0.5
+uvicorn app:app --reload --port 8000
+```
+
 Optional AI Gateway fallback:
 
 ```bash

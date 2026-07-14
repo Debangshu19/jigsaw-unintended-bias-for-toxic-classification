@@ -19,3 +19,6 @@ ckpt_ravenx/
 *.safetensors
 *.bin
 *.onnx
+
+# runtime logs
+*.log

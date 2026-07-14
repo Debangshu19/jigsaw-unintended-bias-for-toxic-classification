@@ -4,6 +4,20 @@ from dataclasses import dataclass, field
 from typing import Iterable
 
 DEFAULT_THRESHOLD = 0.5
+
+
+def is_devanagari(text: str, ratio: float = 0.20) -> bool:
+    """True if a meaningful share of the letters are Devanagari (U+0900-U+097F).
+
+    Uses a ratio (not any-char) so a single stray character or an emoji does not
+    misroute an otherwise-English comment. HASOC Hindi posts are ~82% Devanagari,
+    so 0.20 comfortably separates Hindi from English.
+    """
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return False
+    deva = sum(1 for c in letters if "ऀ" <= c <= "ॿ")
+    return (deva / len(letters)) >= ratio
 AI_GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions"
 AI_GATEWAY_MODEL = os.getenv("RAVEN_AI_GATEWAY_MODEL", "google/gemini-3.5-flash")
 TOXIC_LABEL_HINTS = (
@@ -309,6 +323,88 @@ class TransformersModel:
         return out
 
 
+class MultilingualModel:
+    """Route each text by script: Devanagari -> Hindi model, else -> English model.
+
+    Both sub-models are already ResilientModel/TransformersModel instances, so
+    each keeps its own fallback chain. The wrapper is transparent to the API.
+    """
+
+    def __init__(self, english, hindi) -> None:
+        self.english = english
+        self.hindi = hindi
+        self.source = getattr(english, "source", "raven-english-model")
+        self.hindi_source = getattr(hindi, "source", "raven-hindi-model")
+        self.fallback_source = getattr(english, "fallback_source", None)
+        self.threshold = getattr(english, "threshold", DEFAULT_THRESHOLD)
+        self.model_ref = getattr(english, "model_ref", None)
+        self.hindi_model_ref = getattr(hindi, "model_ref", None)
+
+    def _route(self, text: str):
+        return self.hindi if is_devanagari(text) else self.english
+
+    def _tag(self, result, text: str):
+        # Annotate which language track answered, for the UI / demo.
+        lang = "hi" if is_devanagari(text) else "en"
+        if isinstance(result, Prediction):
+            result.source = f"{result.source} ({lang})"
+            return result
+        result["source"] = f"{result.get('source', '')} ({lang})"
+        return result
+
+    def predict_one(self, text: str) -> Prediction:
+        return self._tag(self._route(text).predict_one(text), text)
+
+    def predict_batch(self, texts: Iterable[str]) -> list[Prediction]:
+        texts = list(texts)
+        # Preserve order while batching each language to its own model.
+        en_idx = [i for i, t in enumerate(texts) if not is_devanagari(t)]
+        hi_idx = [i for i, t in enumerate(texts) if is_devanagari(t)]
+        out: list = [None] * len(texts)
+        if en_idx:
+            for j, pred in zip(en_idx, self.english.predict_batch([texts[i] for i in en_idx])):
+                out[j] = self._tag(pred, texts[j])
+        if hi_idx:
+            for j, pred in zip(hi_idx, self.hindi.predict_batch([texts[i] for i in hi_idx])):
+                out[j] = self._tag(pred, texts[j])
+        return out
+
+    def explain_one(self, text: str) -> dict:
+        return self._tag(self._route(text).explain_one(text), text)
+
+
+def _build_english_model(fallback):
+    model_dir = os.getenv("RAVEN_MODEL_DIR")
+    if model_dir and os.path.isdir(model_dir):
+        try:
+            return ResilientModel(TransformersModel(model_dir, "raven-local-model"), fallback)
+        except Exception:
+            return fallback
+    model_id = os.getenv("RAVEN_MODEL_ID")
+    if model_id:
+        try:
+            return ResilientModel(TransformersModel(model_id, "raven-hf-model"), fallback)
+        except Exception:
+            return fallback
+    return fallback
+
+
+def _build_hindi_model(fallback):
+    hi_dir = os.getenv("RAVEN_HI_MODEL_DIR")
+    if hi_dir and os.path.isdir(hi_dir):
+        try:
+            return ResilientModel(TransformersModel(hi_dir, "raven-muril-hi"), fallback)
+        except Exception:
+            return None
+    hi_id = os.getenv("RAVEN_HI_MODEL_ID")
+    if hi_id:
+        try:
+            return ResilientModel(TransformersModel(hi_id, "raven-muril-hi-hf"), fallback)
+        except Exception:
+            return None
+    return None
+
+
 def load_model():
     fallback = DemoFallbackModel()
     if os.getenv("AI_GATEWAY_API_KEY"):
@@ -317,18 +413,8 @@ def load_model():
         except Exception:
             fallback = DemoFallbackModel()
 
-    model_dir = os.getenv("RAVEN_MODEL_DIR")
-    if model_dir and os.path.isdir(model_dir):
-        try:
-            return ResilientModel(TransformersModel(model_dir, "raven-local-model"), fallback)
-        except Exception:
-            return fallback
-
-    model_id = os.getenv("RAVEN_MODEL_ID")
-    if model_id:
-        try:
-            return ResilientModel(TransformersModel(model_id, "raven-hf-model"), fallback)
-        except Exception:
-            return fallback
-
-    return fallback
+    english = _build_english_model(fallback)
+    hindi = _build_hindi_model(fallback)
+    if hindi is not None:
+        return MultilingualModel(english, hindi)
+    return english

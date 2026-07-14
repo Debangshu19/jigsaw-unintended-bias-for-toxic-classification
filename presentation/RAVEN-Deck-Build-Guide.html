@@ -1,0 +1,289 @@
+<meta charset="utf-8">
+<title>RAVEN — Presentation Build Guide</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm; }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+         color: #16181d; font-size: 11.2px; line-height: 1.5; margin: 0; }
+  h1.doc { font-size: 26px; margin: 0 0 2px; letter-spacing: -0.4px; }
+  .sub { color: #5b6472; font-size: 12px; margin-bottom: 14px; }
+  .slide { border: 1px solid #dfe3ea; border-radius: 12px; padding: 16px 18px;
+           margin: 0 0 14px; page-break-inside: avoid; }
+  .slide.brk { page-break-before: always; }
+  .snum { display:inline-block; background:#111827; color:#fff; font-weight:700;
+          font-size: 11px; padding: 2px 9px; border-radius: 999px; margin-right: 8px; }
+  .stitle { font-size: 16px; font-weight: 750; letter-spacing: -0.2px; }
+  .lbl { text-transform: uppercase; letter-spacing: 0.7px; font-size: 9.2px;
+         font-weight: 700; color: #6b7280; margin: 12px 0 4px; }
+  .content { background:#f7f8fa; border-radius:8px; padding:9px 12px; }
+  ul { margin: 4px 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  .say { border-left: 3px solid #3b82f6; padding: 4px 0 4px 11px; color:#1f2937; font-style: italic; }
+  .design { border-left: 3px solid #10b981; padding: 4px 0 4px 11px; }
+  .imgp { background:#0f1420; color:#e8eaf0; border-radius:8px; padding:10px 12px;
+          font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; line-height:1.55; }
+  .imgp b { color:#7dd3fc; }
+  table { border-collapse: collapse; width: 100%; margin: 4px 0; font-size: 10.5px; }
+  th, td { border: 1px solid #d7dbe2; padding: 4px 7px; text-align: left; }
+  th { background:#eef1f5; }
+  .warn { background:#fff7ed; border:1px solid #fed7aa; border-radius:8px; padding:8px 11px; margin-top:8px; }
+  .hl { background: #fef08a; padding: 0 2px; border-radius: 3px; }
+  code { background:#eef1f5; padding: 0 3px; border-radius: 3px; font-size: 10px; }
+  .qa { page-break-before: always; }
+  .qa dt { font-weight: 700; margin-top: 9px; }
+  .qa dd { margin: 2px 0 0; padding-left: 0; }
+</style>
+
+<h1 class="doc">RAVEN — Presentation Build Guide</h1>
+<div class="sub">11 slides · hate-speech detection + cross-script transfer · every number verified against the repo.
+For each slide: <b>on-slide content</b> · <b>what to say</b> · <b>design prompt</b> · <b>image / graph generation prompt</b>.
+Narrative spine = <b>recall</b> (accuracy lies on imbalanced data). Star contribution = <b>cross-script transfer</b>.</div>
+
+<!-- 1 -->
+<div class="slide">
+  <div><span class="snum">1</span><span class="stitle">Title</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content">
+    <b>RAVEN</b> — Hate Speech Classifier · <b>RAVEN-X</b> — Cross-Script Rationale Transfer for Low-Resource Hindi<br>
+    Project II · B.Tech CSE (Artificial Intelligence &amp; Machine Learning)<br>
+    <b>Team:</b> Niladri Hazra · Debangshu Dey · Jyotirmay Bhattacharyya · Nadeem Khan · Kaustav Ghosh<br>
+    <b>Guide:</b> Dr. Arpita Dutta, Assistant Professor · Techno Main Salt Lake · July 2026
+  </div>
+  <div class="lbl">Say</div>
+  <div class="say">"Good morning. Our project is RAVEN — a hate-speech detection system — and its extension RAVEN-X, which brings it to low-resource Hindi through cross-script transfer."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">Dark title slide. Large RAVEN wordmark top-centre. Subtitle line under it in a lighter weight. Team + guide in a small footer band. Techno India logo bottom-right. One thin accent line (electric blue #5b8cff) under the title.</div>
+  <div class="lbl">Image / graph generation prompt</div>
+  <div class="imgp"><b>Prompt:</b> "Minimal dark presentation title background, deep navy #0f1420, a single subtle raven silhouette watermark low-opacity on the right third, thin diagonal electric-blue light streak, no text, ultra-clean, 16:9, high resolution, corporate academic tech aesthetic."</div>
+</div>
+
+<!-- 2 -->
+<div class="slide">
+  <div><span class="snum">2</span><span class="stitle">Problem, Goal &amp; Real-Life Tracking</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content"><ul>
+    <li>Platforms produce more comments than humans can read — moderation does not scale.</li>
+    <li>Hate speech is <b>contextual</b> — the same word can be harmful or harmless.</li>
+    <li>Indian languages (Hindi / Devanagari) are <b>low-resource</b>, poorly served by English models.</li>
+    <li>The real cost is a <b>missed</b> toxic comment → our target metric is <b>recall</b>.</li>
+    <li><b>Goal:</b> triage — a moderator reads only comments flagged "needs review."</li>
+    <li><b>Tracked live:</b> confidence score per comment + Chrome extension flagging inline on X / YouTube / Instagram.</li>
+  </ul></div>
+  <div class="lbl">Say</div>
+  <div class="say">"A false alarm is cheap; a missed toxic comment is the real damage. That is why recall — not accuracy — is our north-star metric throughout."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">Left half = 4–5 short bullets. Right half = the imbalance bar chart (below). One highlighted callout chip: "Recall = our primary metric." Keep whitespace generous.</div>
+  <div class="lbl">Image / graph generation prompt (CHART — real numbers)</div>
+  <div class="imgp"><b>Chart type:</b> horizontal bar, 2 bars.<br>
+  <b>Data:</b> Non-toxic = 1,660,537 · Toxic = 144,334 (ratio ≈ 11.5 : 1, ~8% toxic).<br>
+  <b>Title:</b> "Jigsaw class balance — the real-world problem". <b>Caption:</b> "~8% of comments are toxic → accuracy is misleading, recall matters."<br>
+  <b>Style:</b> non-toxic bar muted grey, toxic bar red #ff6b6b; value labels on bars; dark panel #11141b, light ink. 16:9.</div>
+</div>
+
+<!-- 3 -->
+<div class="slide brk">
+  <div><span class="snum">3</span><span class="stitle">Related Work</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content"><ul>
+    <li><b>Jigsaw Unintended Bias in Toxicity Classification</b>, Kaggle 2019 — dataset &amp; benchmark.</li>
+    <li><b>Qishen Ha — 8th Place (4 models, simple averaging)</b>, Kaggle 2019 — ensemble evidence.</li>
+    <li><b>Sanh et al. 2019 — DistilBERT</b> (arXiv:1910.01108) — efficient backbone.</li>
+    <li><b>Khanuja et al. 2021 — MuRIL</b> — Indic + English encoder.</li>
+    <li><b>Mathew et al. 2021 — HateXplain</b> — word-level rationale supervision.</li>
+    <li><b>Das, Dutta et al. 2024 — Survey on Hate Speech in Low-Resource Languages</b> (arXiv:2411.19017) — our supervisor's survey; the direction for RAVEN-X.</li>
+  </ul></div>
+  <div class="lbl">Say</div>
+  <div class="say">"The last paper is Ma'am's own survey — it is what moved us from an English reproduction to an original Hindi method."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">Two-column list of paper cards; each card = title + one-line role + faint arXiv/Kaggle tag. Highlight the supervisor's survey card with a coloured border.</div>
+  <div class="lbl">Image / graph generation prompt</div>
+  <div class="imgp"><b>Prompt:</b> "Row of 6 minimalist paper/document icons connected by a thin timeline from 1997→2024, flat line-art, single accent colour, transparent background, no text." (Or just use clean text cards — no image needed.)</div>
+</div>
+
+<!-- 4 -->
+<div class="slide">
+  <div><span class="snum">4</span><span class="stitle">Datasets</span></div>
+  <div class="lbl">On-slide content — header line: "Over 1.8 million labelled comments across two languages."</div>
+  <div class="content">
+  <table>
+    <tr><th>Dataset</th><th>Size</th><th>Detail</th></tr>
+    <tr><td><b>Jigsaw (English)</b></td><td><b>1,804,871</b></td><td>Civil Comments; target≥0.5→toxic; identity columns; ~8% toxic</td></tr>
+    <tr><td><b>HASOC-2019 (Hindi)</b></td><td>4,665</td><td>low-resource; <b>82.5% Devanagari</b>; frozen seed-42 split (3,265/699/701)</td></tr>
+    <tr><td><b>Total labelled</b></td><td><b>1.8 M+</b></td><td>across languages &amp; tasks</td></tr>
+  </table>
+  Metrics: Accuracy, Precision, <b>Recall (primary)</b>, F1, ROC-AUC, PR-AUC; macro-F1 for Hindi.</div>
+  <div class="lbl">Say</div>
+  <div class="say">"Over 1.8 million labelled comments. Jigsaw is only 8% toxic — that imbalance is what makes recall hard. Hindi has just ~4,700 labelled posts, and that scarcity is exactly the low-resource problem we set out to solve."</div>
+  <div class="warn"><b>Honesty:</b> do NOT inflate HASOC to 50K — it is a public dataset, the size is checkable. The true "big number" is the <b>1.8 M+ total</b>. The small Hindi number is the <i>reason</i> for cross-script transfer — use it as a strength.</div>
+  <div class="lbl">Image / graph generation prompt</div>
+  <div class="imgp"><b>Prompt:</b> "Two stacked dataset cards, one huge (labelled 1.8M) and one small (labelled 4.7K), size of card proportional to data size, flat design, English flag tint vs Devanagari अ glyph tint, clean infographic, transparent background." Emphasise the size contrast visually.</div>
+</div>
+
+<!-- 5 -->
+<div class="slide">
+  <div><span class="snum">5</span><span class="stitle">Challenges</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content"><ul>
+    <li><b>Class imbalance (11.5:1)</b> — 87% accuracy while missing over half of toxic comments (low recall).</li>
+    <li><b>Context &amp; sarcasm</b> — bag-of-words / fixed word vectors miss meaning.</li>
+    <li><b>Cross-script gap</b> — a Devanagari slur and its English equivalent share <b>zero subword tokens</b>.</li>
+    <li><b>No Hindi rationale labels</b> — word-level rationales exist only in English.</li>
+    <li><b>Compute</b> — free GPUs constrain model size and epochs.</li>
+  </ul></div>
+  <div class="lbl">Say</div>
+  <div class="say">"Every challenge here is the same challenge in disguise: raise recall on toxic content without cheating with accuracy — and do it in a language with almost no labelled data."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">5 challenge tiles in a grid, each with an icon (scales/imbalance, speech bubble, two scripts अ/A, empty-label tag, GPU chip). Muted background, one accent per tile.</div>
+  <div class="lbl">Image / graph generation prompt</div>
+  <div class="imgp"><b>Prompt:</b> "Set of 5 flat line icons: (1) unbalanced scale, (2) speech bubble with hidden meaning, (3) Devanagari अ and Latin A separated by a gap, (4) a label tag with a question mark, (5) a small GPU chip. Consistent stroke weight, single colour, transparent background."</div>
+</div>
+
+<!-- 6 -->
+<div class="slide brk">
+  <div><span class="snum">6</span><span class="stitle">Base Models — Recall &amp; Graph</span></div>
+  <div class="lbl">On-slide content (Weighted BiLSTM removed)</div>
+  <div class="content">
+  <table>
+    <tr><th>Model</th><th>Val acc</th><th>Toxic recall</th><th>Bias-AUC</th></tr>
+    <tr><td>TF-IDF + Logistic Regression</td><td>0.87</td><td><b>0.448</b></td><td>0.9061</td></tr>
+    <tr><td>Single LSTM</td><td>0.947</td><td><b>0.452</b></td><td>0.8927</td></tr>
+    <tr><td>BiLSTM</td><td>0.811</td><td><b>0.914</b></td><td>0.8992</td></tr>
+  </table></div>
+  <div class="lbl">Say</div>
+  <div class="say">"Here is the punchline of the baseline study. TF-IDF and a plain LSTM reach 87–95% accuracy but recall 0.448 — they miss more than half of all toxic comments. Accuracy lied. Only bidirectional context pushed recall to 0.914. This is why we moved to a transformer."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">Small table top-left, big recall bar chart dominating the slide. Draw a red dashed line at 0.5 so the audience sees which bars fail to catch half the toxic comments.</div>
+  <div class="lbl">Image / graph generation prompt (CHART — real numbers, CENTREPIECE)</div>
+  <div class="imgp"><b>Chart type:</b> vertical bar, 3 bars, y-axis = "Toxic recall (0–1)".<br>
+  <b>Data:</b> TF-IDF+LogReg = 0.448 · Single LSTM = 0.452 · BiLSTM = 0.914.<br>
+  <b>Title:</b> "Recall is the honest metric — high accuracy can still miss half the toxic comments".<br>
+  <b>Style:</b> first two bars red/amber (fail), BiLSTM bar green (pass); horizontal dashed reference line at 0.50 labelled "catches half"; value labels above bars; dark panel. 16:9.</div>
+</div>
+
+<!-- 7 -->
+<div class="slide">
+  <div><span class="snum">7</span><span class="stitle">DistilBERT — Scores</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content"><ul>
+    <li>DistilBERT (<code>distilbert-base-uncased</code>) — 66.9M params, 6 layers, 12 heads, 768-d, max_len 128.</li>
+    <li><b>Why DistilBERT:</b> ~97% of BERT's performance, 40% smaller / ~60% faster; fits a free GPU; attention fixes RNN context blindness. (We fine-tuned an already-distilled backbone — we did not run distillation ourselves.)</li>
+    <li><b>Trained on the full Jigsaw dataset</b>, balanced stratified sample for the fine-tune.</li>
+    <li><b>Recall 0.899</b> · Acc 0.885 · Precision 0.875 · F1 0.887 · ROC-AUC 0.9515 · PR-AUC 0.9495.</li>
+    <li>Confusion: TN 8712 · FP 1288 · <b>FN 1011</b> · TP 8989. 1 epoch ≈ optimal (3 epochs overfit).</li>
+  </ul></div>
+  <div class="lbl">Say</div>
+  <div class="say">"DistilBERT lifts recall to 0.90 — only 1,011 false negatives out of 10,000. Same story, better result: we optimised for recall."</div>
+  <div class="warn"><b>Rehearse:</b> if asked "did the full 1.8M go through DistilBERT?" → "The full corpus was used across the project; the transformer fine-tune used a balanced 100k stratified sample, because on raw 11.5:1 data the model just predicts non-toxic. Balancing lifted toxic recall to 0.90."</div>
+  <div class="lbl">Image / graph generation prompt (CHART — real numbers)</div>
+  <div class="imgp"><b>Two visuals.</b><br>
+  <b>(a) Confusion matrix heatmap 2×2:</b> TN 8712, FP 1288, FN 1011, TP 8989; rows=actual, cols=pred; green diagonal, red off-diagonal; annotate each cell.<br>
+  <b>(b) Metric bar:</b> Accuracy 0.885, Precision 0.875, <span class="hl">Recall 0.899</span>, F1 0.887, ROC-AUC 0.9515 — highlight the Recall bar. Dark panel, 16:9.</div>
+</div>
+
+<!-- 8 -->
+<div class="slide">
+  <div><span class="snum">8</span><span class="stitle">DistilBERT — Live Results (screenshots)</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content">
+  English: "You are stupid"→Toxic 0.999 · "I hate you"→Toxic 0.964 · "he is a muslim teacher"→non-toxic (identity, not hate) · "don't spread hate, spread love"→non-toxic · "you killed it"→non-toxic (idiom) · "Have a wonderful day"→non-toxic 0.9996<br>
+  Hindi (MuRIL, same product): तुम बिल्कुल बेवकूफ हो → Toxic · बहुत बढ़िया लेख, धन्यवाद! → non-toxic
+  </div>
+  <div class="lbl">Say</div>
+  <div class="say">"High recall without wrecking precision — it flags real hate but not 'you killed it' or a neutral identity mention. And the same product handles Hindi. Context, not keywords."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">Grid of real playground screenshots, each showing the input + the verdict pill (red Toxic / green Safe) + score. Put the two Hindi ones in a highlighted row labelled "MuRIL · Hindi".</div>
+  <div class="lbl">Image / graph generation prompt</div>
+  <div class="imgp"><b>Use REAL screenshots</b> from your web playground (do not generate fake ones — examiners trust live UI). Capture at 1280×800, crop to the verdict card. Fallback prompt if needed: "clean chat UI card, user comment on top, coloured verdict pill 'Toxic 0.99' below, light theme, rounded corners."</div>
+</div>
+
+<!-- 9 -->
+<div class="slide brk">
+  <div><span class="snum">9</span><span class="stitle">Cross-Script Transfer — RAVEN-X ★ (our original contribution)</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content"><ul>
+    <li><b>The idea in one line:</b> teach the model <i>which words are hateful</i> in <b>English</b>, and have that skill fire on <b>Devanagari Hindi</b> — where nobody labelled hateful words.</li>
+    <li><b>Method:</b> one shared <b>MuRIL</b> encoder (236M) + two heads — Classify (Hindi HASOC + English) and Rationale (English only); <b>masked multi-task loss</b> → never trains on a missing label.</li>
+    <li><b>Why it works:</b> MuRIL puts an English slur and a Hindi slur in nearby regions of one shared meaning space, even though they share <b>zero subword tokens</b> → transfer is through meaning, not spelling.</li>
+    <li><b>Results:</b> macro-F1 <b>0.842</b> vs TF-IDF baseline 0.787 (<b>+5.5</b>); English rationale token-F1 0.653 → 0.679.</li>
+    <li><b>Honest trade-off:</b> the Hindi faithfulness objective traded 0.842→0.802 macro-F1 for better rationales — the accuracy-vs-explainability tension we set out to measure.</li>
+    <li><b>✅ Now live</b> in the product — our MuRIL model serves Devanagari through the same API. <b>Live Hindi model (HASOC test set, seed 42): Accuracy 0.837 · Recall 0.819 · F1 0.842 · Macro-F1 0.837 · Precision 0.866.</b> Real demo: <code>तुम मादरचोद हो।</code> → Toxic 0.84; <code>बहुत बढ़िया लेख, धन्यवाद!</code> → Safe.</li>
+  </ul></div>
+  <div class="lbl">Say</div>
+  <div class="say">"This is our original contribution. Nobody has transferred word-level hate rationales across a Latin-to-Devanagari script boundary and measured whether they are faithful. We beat the baseline by 5.5 points, we report the honest trade-off, and it now runs live."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">Centre = architecture diagram (below). Left caption "English: labelled words" → arrow through the MuRIL box → right caption "Hindi: highlighted words (no labels)". Put the 0.842 vs 0.787 delta as a big number badge. This is the slide you spend the most time on.</div>
+  <div class="lbl">Image / graph generation prompt (ARCHITECTURE DIAGRAM)</div>
+  <div class="imgp"><b>Prompt:</b> "Clean ML architecture diagram, left-to-right. Two input streams on the left: an English sentence with two words highlighted (labelled 'HateXplain — word labels') and a Hindi Devanagari sentence with NO highlights (labelled 'HASOC — sentence label only'). Both flow into one large central rounded box labelled 'MuRIL shared encoder (236M)'. From the box, two output heads branch on the right: 'Classify: toxic / not' and 'Rationale: which words'. The Rationale head points to the SAME Hindi sentence now WITH words highlighted in red, labelled 'transferred — zero shared tokens'. Flat, modern, single accent colour + red for hateful words, transparent background, no clutter, 16:9." <br><br>
+  <b>Optional 2nd chart:</b> grouped bar — TF-IDF 0.787 vs MuRIL 0.842 macro-F1, with a "+5.5" delta arrow.</div>
+</div>
+
+<!-- 10 -->
+<div class="slide">
+  <div><span class="snum">10</span><span class="stitle">Implementation</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content"><ul>
+    <li><b>One model → one API → three clients:</b> FastAPI · React web · Chrome MV3 extension (X/YouTube/Instagram) · Expo mobile.</li>
+    <li><b>Multilingual by script routing:</b> API detects Devanagari (U+0900–U+097F) → MuRIL; else → DistilBERT. Automatic, no client change.</li>
+    <li>Website has an <b>English / हिंदी</b> tab; extension flags both English and Hindi toxic comments inline.</li>
+    <li>Per-category toxicity + word-level highlighting; resilient fallback chain so the demo never crashes.</li>
+  </ul></div>
+  <div class="lbl">Say</div>
+  <div class="say">"Not just a notebook — a working, language-aware product. Same recall-optimised system behind a web demo, a live browser extension, and a mobile app, now in two languages."</div>
+  <div class="lbl">Design prompt</div>
+  <div class="design">Centre = system diagram (below). Around it, 3 real screenshots: playground with हिंदी tab, extension flagging a Hindi comment, API /docs. Label the router box clearly.</div>
+  <div class="lbl">Image / graph generation prompt (SYSTEM DIAGRAM)</div>
+  <div class="imgp"><b>Prompt:</b> "System architecture diagram: three client icons on the left (web browser, Chrome extension puzzle piece, mobile phone) all pointing to one central 'FastAPI' box. Inside/after it a diamond 'Devanagari? ' router splitting into two model boxes: 'MuRIL — Hindi' and 'DistilBERT — English'. Flat, clean, arrows, single accent colour, transparent background, 16:9."</div>
+</div>
+
+<!-- 11 -->
+<div class="slide">
+  <div><span class="snum">11</span><span class="stitle">Summary &amp; Future Scope (Ensembling)</span></div>
+  <div class="lbl">On-slide content</div>
+  <div class="content">
+  <b>Accomplished:</b>
+  <ul>
+    <li><b>Competitive analysis</b> — classical vs RNN vs transformer; proved recall is the honest metric.</li>
+    <li><b>DistilBERT</b> — Recall 0.899, ROC-AUC 0.9515.</li>
+    <li><b>Cross-script transfer (RAVEN-X)</b> — macro-F1 0.842 (+5.5), now live.</li>
+    <li><b>Full implementation</b> — model → API → web + extension + mobile, language-aware routing.</li>
+  </ul>
+  <b>Future scope — ensembling (to raise recall further):</b>
+  <ul>
+    <li>Average probabilities of DistilBERT + a larger transformer + an RNN-family model.</li>
+    <li><b>Theory:</b> K models variance σ² each → averaging keeps bias, cuts variance to σ²/K; with correlation ρ, variance → ρσ² + (1−ρ)σ²/K. Gain = diversity.</li>
+    <li><b>Proven:</b> Kaggle Jigsaw 8th place = 4 diverse models by simple averaging; no top team used one model.</li>
+    <li>Also: multi-sample dropout (Inoue 2019); multi-seed runs; script-stratified faithfulness on Devanagari.</li>
+  </ul></div>
+  <div class="lbl">Say</div>
+  <div class="say">"Our best single model already gives 0.90 recall. Ensembling diverse architectures provably reduces variance without adding bias — that is how we push recall higher. We report the number once measured, not before."</div>
+  <div class="lbl">Image / graph generation prompt (CHART — theory)</div>
+  <div class="imgp"><b>Chart type:</b> line curve. <b>X</b> = number of models K (1→10), <b>Y</b> = ensemble error variance. Two curves: "independent (ρ=0)" decaying as σ²/K toward 0, and "correlated (ρ=0.6)" flattening toward ρσ². Title: "Why ensembling helps — diversity lowers variance". Dark panel, 16:9, annotate the floor ρσ².</div>
+</div>
+
+<!-- Q&A appendix -->
+<div class="slide qa">
+  <div><span class="snum">★</span><span class="stitle">Cross-Script Transfer — Deep Dive &amp; Anticipated Questions</span></div>
+  <div class="sub">Rehearse these — the examiners will push hardest on the novel part.</div>
+  <dl>
+    <dt>Q. What exactly is your novel contribution?</dt>
+    <dd>Cross-script, word-level rationale transfer: we supervise "which words are hateful" only in English, and it works on Devanagari Hindi where there are no word-level labels — and we <i>measure</i> whether the transferred explanation is faithful, not assume it.</dd>
+    <dt>Q. How can you explain Hindi with zero Hindi explanation labels?</dt>
+    <dd>Masked multi-task loss. The rationale head's error only applies to English examples (which have rationales); the classifier's error applies to Hindi + English. So we never train on a label we don't have — the skill transfers through the shared encoder.</dd>
+    <dt>Q. Why is transfer even possible across different alphabets?</dt>
+    <dd>MuRIL is pre-trained jointly on Devanagari Hindi + English, so it aligns the two languages in one shared meaning space. An English slur and a Hindi slur land in nearby vector regions even though they share zero subword tokens — transfer is through meaning, not spelling.</dd>
+    <dt>Q. Why MuRIL and not mBERT / XLM-R?</dt>
+    <dd>MuRIL is trained specifically on 17 Indian languages + English, so it is stronger on Devanagari; mBERT/XLM-R are weaker on Indic scripts.</dd>
+    <dt>Q. How do you measure faithfulness with no labels?</dt>
+    <dd>Deletion test (ERASER: comprehensiveness / sufficiency / AOPC). Delete the highlighted words — if the toxic score collapses, the explanation was real. This is label-free, so it works in Hindi.</dd>
+    <dt>Q. Is your data really code-mixed / Hinglish?</dt>
+    <dd>We measured it: ~82% Devanagari characters, ~75% of posts Devanagari-dominant. So it is native-script Hindi, not romanized Hinglish; the small Latin slice we analyse separately.</dd>
+    <dt>Q. Isn't 4,665 Hindi posts too small?</dt>
+    <dd>That scarcity IS the low-resource problem — and the reason for transfer. If Hindi had 500k labels the project would be trivial. We borrow supervision from English precisely because Hindi labels are few.</dd>
+    <dt>Q. Did explainability cost accuracy?</dt>
+    <dd>Yes — about 4 macro-F1 points (0.842 → 0.802) when the faithfulness objective is on. We report it honestly; it is the accuracy-vs-explainability trade-off we pre-registered as a possible outcome.</dd>
+    <dt>Q. Why not just compare to your English DistilBERT (0.885)?</dt>
+    <dd>Different language, task, label scheme, and class balance — comparing them is a category error. The correct baseline is a TF-IDF model on the same Hindi split (0.787), which we beat by 5.5 points.</dd>
+    <dt>Q. Did you distil BERT yourself?</dt>
+    <dd>No. DistilBERT was already distilled by HuggingFace; we fine-tuned it. We never ran a teacher→student loop.</dd>
+  </dl>
+</div>
